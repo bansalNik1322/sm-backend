@@ -15,8 +15,12 @@ export interface ILoginUser {
 }
 
 export interface IResponse {
-  status: boolean;
-  code: number;
+  status?: boolean;
+  code?: number;
   message?: string;
   data?: any;
+}
+
+export interface IJWTPayload {
+  userid: string;
 }

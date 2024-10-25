@@ -7,7 +7,10 @@ export type TokenDocument = Token & Document;
 @Schema({ timestamps: true })
 export class Token implements IToken {
   @Prop({ required: true })
-  token_hash: string;
+  access_token_hash: string;
+
+  @Prop({ required: true })
+  refresh_token_hash: string;
 
   @Prop({ required: true, default: false })
   deleted: boolean;
@@ -21,7 +24,7 @@ export class Token implements IToken {
   @Prop({ required: true })
   ip_address: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: 'android' })
   device: string;
 }
 

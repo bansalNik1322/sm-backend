@@ -63,6 +63,12 @@ export interface IUser {
     answer: string;
   }[];
 
+  otps: {
+    otp_hash: string;
+    otp_expiry_time: Date;
+    type: 'email' | 'phone';
+  }[];
+
   deleted_at?: Date;
 }
 
@@ -70,7 +76,8 @@ export interface IToken {
   readonly id?: string;
   readonly created_at?: Date;
   readonly updated_at?: Date;
-  token_hash: string;
+  access_token_hash: string;
+  refresh_token_hash: string;
   userid: Types.ObjectId;
   deleted_at?: Date;
   ip_address: string;
@@ -91,4 +98,12 @@ export interface ILoginAttempt {
   success: boolean;
   attempted_at: Date;
   deleted_at: Date;
+}
+
+export interface IEmailTemplate {
+  id?: string;
+  title: string;
+  slug: string;
+  template: string;
+  subject: string;
 }

@@ -25,3 +25,8 @@ export class LoginAttempt implements ILoginAttempt {
 }
 
 export const LoginAttemptSchema = SchemaFactory.createForClass(LoginAttempt);
+
+LoginAttemptSchema.methods.softDelete = function () {
+  this.deletedAt = new Date();
+  return this.save();
+};

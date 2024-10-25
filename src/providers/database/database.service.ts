@@ -1,28 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { Model, Document } from 'mongoose';
+import { Inject, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { User } from 'src/models/Schemas/user';
 
 @Injectable()
-export class BaseService<T extends Document> {
-  constructor(private readonly model: Model<T>) {}
+export class DatabaseService {
+  private models: { [key: string]: Model<any> };
 
-  async create(data: Partial<T>): Promise<T> {
-    const createdEntity = new this.model(data);
-    return createdEntity.save();
+  constructor(@Inject('USER_PROVIDER') private _userModel: Model<User>) {
+    this.models = {
+      User: _userModel,
+    };
   }
 
-  async findAll(): Promise<T[]> {
-    return this.model.find().exec();
+  public getModel(modelName: string) {
+    return this.models[modelName];
   }
 
-  async findById(id: string): Promise<T | null> {
-    return this.model.findById(id).exec();
+  async create(modelName: string, data: any) {
+    const model = this.getModel(modelName);
+    return model.create(data);
   }
 
-  async update(id: string, data: Partial<T>): Promise<T | null> {
-    return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
+  async findAll(modelName: string) {
+    const model = this.getModel(modelName);
+    return model.find().exec();
+  }
+  async findById(modelName: string, id: string) {
+    const model = this.getModel(modelName);
+    return model.findById(id).exec();
   }
 
-  async delete(id: string): Promise<T | null> {
-    return this.model.findByIdAndDelete(id).exec();
+  async update(modelName: string, id: string, data: any) {
+    const model = this.getModel(modelName);
+    return model.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async delete(modelName: string, id: string) {
+    const model = this.getModel(modelName);
+    return model.findByIdAndDelete(id).exec();
   }
 }

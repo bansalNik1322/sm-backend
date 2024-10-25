@@ -3,7 +3,7 @@ import slugify from 'slugify';
 import { Document } from 'mongoose';
 import { IUser } from '../interface';
 import { UserAccountStatus, UserAccountType } from 'src/common/constants/enum';
-import { encryptPassword } from 'src/common/utils/helper';
+import { encryptText } from 'src/common/utils/helper';
 
 export type UserDocument = User & Document;
 
@@ -124,6 +124,9 @@ export class User implements IUser {
   @Prop({ required: false })
   phone_verified_at: Date;
 
+  @Prop({ required: false, default: [] })
+  otps: { otp_hash: string; otp_expiry_time: Date; type: 'email' | 'phone' }[];
+
   @Prop({
     required: false,
     type: [{ question: String, answer: String }],
@@ -143,7 +146,7 @@ export class User implements IUser {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.pre<UserDocument>('save', async function (next) {
-  this.password = await encryptPassword(this.password);
+  this.password = await encryptText(this.password);
 
   if (!this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
@@ -174,8 +177,3 @@ UserSchema.virtual('login_attempts', {
   localField: '_id',
   foreignField: 'userid',
 });
-
-
-UserSchema.virtual('lockouts', {
-  ref: 
-})

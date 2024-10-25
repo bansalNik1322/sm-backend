@@ -8,11 +8,12 @@ export class AuthController {
   constructor(private _authService: AuthService) {}
   @Post()
   async register(@Body() payload: RegisterUser) {
-    await this._authService.register(payload);
+    // await this._authService.register(payload);
+    await this._authService.create();
   }
 
-  @Post()
-  async login(@Body() payload: LoginUser, @Req() request: Request) {
-    await this._authService.login(payload, request);
-  }
+  // @Post()
+  // async login(@Body() payload: LoginUser, @Req() request: Request) {
+  //   await this._authService.login(payload, request);
+  // }
 }

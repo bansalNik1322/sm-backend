@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { models } from 'src/models';
+import { DatabaseService } from './database.service';
+import { USER_PROVIDER } from 'src/models/provider';
 
 @Module({
   imports: [
@@ -10,5 +12,7 @@ import { models } from 'src/models';
     ),
     MongooseModule.forFeature(models),
   ],
+  providers: [DatabaseService, ...USER_PROVIDER],
+  exports: [DatabaseService],
 })
 export class DatabaseModule {}
