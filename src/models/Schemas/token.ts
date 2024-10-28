@@ -1,6 +1,7 @@
 import { Document, Types } from 'mongoose';
-import { IToken } from '../interface';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
+import { IToken } from '../interface';
 
 export type TokenDocument = Token & Document;
 
@@ -26,6 +27,9 @@ export class Token implements IToken {
 
   @Prop({ required: true, default: 'android' })
   device: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);

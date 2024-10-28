@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import slugify from 'slugify';
 import { Document } from 'mongoose';
-import { IUser } from '../interface';
 import { UserAccountStatus, UserAccountType } from 'src/common/constants/enum';
 import { encryptText } from 'src/common/utils/helper';
+
+import { IUser } from '../interface';
 
 export type UserDocument = User & Document;
 

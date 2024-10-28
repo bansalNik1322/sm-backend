@@ -36,3 +36,11 @@ export class LoginUser {
   @IsOptional()
   country_code: string;
 }
+
+export class SendOTP {
+  @IsNotEmpty()
+  userid: string;
+
+  @IsNotEmpty()
+  type: 'registration' | 'forgot';
+}

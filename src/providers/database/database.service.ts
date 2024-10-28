@@ -1,42 +1,75 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, RootFilterQuery } from 'mongoose';
+import { Lockout } from 'src/models/Schemas/lockout';
+import { LoginAttempt } from 'src/models/Schemas/login-attempts';
+import { Token } from 'src/models/Schemas/token';
 import { User } from 'src/models/Schemas/user';
 
 @Injectable()
 export class DatabaseService {
   private models: { [key: string]: Model<any> };
 
-  constructor(@Inject('USER_PROVIDER') private _userModel: Model<User>) {
+  constructor(
+    @InjectModel('User') private _userModel: Model<User>,
+    @InjectModel('LoginAttempts')
+    private _loginAttemptModel: Model<LoginAttempt>,
+    @InjectModel('Lockout') private _lockoutModel: Model<Lockout>,
+    @InjectModel('Token') private _tokenModel: Model<Token>,
+  ) {
     this.models = {
       User: _userModel,
+      LoginAttempt: _loginAttemptModel,
+      Lockout: _lockoutModel,
+      Token: _tokenModel,
     };
   }
 
-  public getModel(modelName: string) {
+  public getModel<T>(modelName: string): Model<T> {
     return this.models[modelName];
   }
 
-  async create(modelName: string, data: any) {
-    const model = this.getModel(modelName);
+  async create<T>(modelName: string, data: { [key: string]: any }) {
+    const model = this.getModel<T>(modelName);
     return model.create(data);
   }
 
-  async findAll(modelName: string) {
-    const model = this.getModel(modelName);
-    return model.find().exec();
+  async findOne<T>(
+    modelName: string,
+    options: RootFilterQuery<T>,
+    sort: Partial<Record<keyof T, 1 | -1>>,
+  ) {
+    const model = this.getModel<T>(modelName);
+    return await model.findOne(options).sort(sort).exec();
   }
-  async findById(modelName: string, id: string) {
-    const model = this.getModel(modelName);
+
+  async findAll<T>(modelName: string, options: RootFilterQuery<T>) {
+    const model = this.getModel<T>(modelName);
+    return model.find(options).exec();
+  }
+
+  async findById<T>(modelName: string, id: string) {
+    const model = this.getModel<T>(modelName);
     return model.findById(id).exec();
   }
 
-  async update(modelName: string, id: string, data: any) {
-    const model = this.getModel(modelName);
+  async update<T>(modelName: string, id: string, data: Partial<T>) {
+    const model = this.getModel<T>(modelName);
     return model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 
-  async delete(modelName: string, id: string) {
-    const model = this.getModel(modelName);
+  async countDocuments<T>(modelName: string, options: RootFilterQuery<T>) {
+    const model = this.getModel<T>(modelName);
+    return await model.countDocuments(options).exec();
+  }
+
+  async delete<T>(modelName: string, id: string) {
+    const model = this.getModel<T>(modelName);
     return model.findByIdAndDelete(id).exec();
+  }
+
+  async deleteMany<T>(modelName: string, options: RootFilterQuery<T>) {
+    const model = this.getModel<T>(modelName);
+    return model.deleteMany(options).exec();
   }
 }

@@ -1,18 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { models } from 'src/models';
+
 import { DatabaseService } from './database.service';
-import { USER_PROVIDER } from 'src/models/provider';
+
+const mongoUri =
+  process.env.CONNECTION_STRING ||
+  'mongodb+srv://smadmin:idknikki@social-media.b7jqg.mongodb.net/sm-backend?retryWrites=true&w=majority&appName=social-media';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      process.env.CONNECTION_STRING ??
-        'mongodb+srv://smadmin:idknikki@social-media.b7jqg.mongodb.net/sm-backend?retryWrites=true&w=majority&appName=social-media',
-    ),
+    MongooseModule.forRoot(mongoUri),
     MongooseModule.forFeature(models),
   ],
-  providers: [DatabaseService, ...USER_PROVIDER],
-  exports: [DatabaseService],
+  providers: [DatabaseService],
+  exports: [DatabaseService, MongooseModule],
 })
 export class DatabaseModule {}

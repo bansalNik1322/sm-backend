@@ -1,6 +1,5 @@
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
-import { IJWTPayload } from '../interfaces/global.interface';
 
 export const encryptText = async (text: string): Promise<string> => {
   const encrypt_password = await bcrypt.hash(text, 10);
@@ -66,7 +65,6 @@ export const device = (req: Request) => {
     }
   }
 
-  // Return with device type, ID, and IP address
   return {
     userAgent,
     deviceType,

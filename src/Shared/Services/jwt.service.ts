@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { IJWTPayload } from 'src/common/interfaces/global.interface';
+import { IJWTPayload, IResponse } from 'src/common/interfaces/global.interface';
 import { encryptText } from 'src/common/utils/helper';
 
 @Injectable()
@@ -22,6 +22,16 @@ export class JWTService {
     } catch (error) {
       console.log('🚀 ~ JWTService ~ generateAuthToken ~ error:', error);
       throw error; // Rethrow the error to handle it upstream
+    }
+  }
+
+  public async verifyToken(token: string): Promise<IResponse> {
+    try {
+      const { userid } = await this._jwtService.verify(token);
+      if (!userid) return { error_message: 'Token Verification Failed' };
+      return { data: { userid } };
+    } catch (error) {
+      return { error_message: error?.message };
     }
   }
 }
