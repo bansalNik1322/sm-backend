@@ -16,11 +16,11 @@ export class Token implements IToken {
   @Prop({ required: true, default: false })
   deleted: boolean;
 
-  @Prop({ required: true, deleted_at: new Date() })
+  @Prop({ required: false })
   deleted_at?: Date;
 
   @Prop({ required: true, ref: 'User' })
-  userid: Types.ObjectId;
+  userid: string;
 
   @Prop({ required: true })
   ip_address: string;

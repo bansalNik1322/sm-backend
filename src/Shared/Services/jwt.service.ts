@@ -11,9 +11,13 @@ export class JWTService {
     payload: IJWTPayload,
   ): Promise<{ [key: string]: string }> {
     try {
-      const accessToken = this._jwtService.sign(payload, { expiresIn: '60m' });
+      const accessToken = this._jwtService.sign(payload, {
+        expiresIn: '60m',
+        secret: 'JWT_SECRET_KEY',
+      });
       const refreshToken = this._jwtService.sign(payload, {
         expiresIn: '365d',
+        secret: 'JWT_SECRET_KEY',
       });
       const refreshTokenHash = await encryptText(refreshToken);
       const accessTokenHash = await encryptText(accessToken);

@@ -3,6 +3,7 @@ import {
   isEmpty,
   IsNotEmpty,
   IsOptional,
+  IsString,
   ValidateIf,
 } from 'class-validator';
 
@@ -43,4 +44,19 @@ export class SendOTP {
 
   @IsNotEmpty()
   type: 'registration' | 'forgot';
+}
+
+export class VerifyOTP {
+  @IsNotEmpty()
+  userid: string;
+
+  @IsNotEmpty()
+  type: 'registration' | 'forgot';
+
+  @IsNotEmpty()
+  otp: string;
+
+  @IsOptional()
+  @IsString()
+  password: string;
 }

@@ -7,7 +7,7 @@ import {
   ISendOTP,
   IVerifyOTP,
 } from 'src/common/interfaces/global.interface';
-import { compareText, device } from 'src/common/utils/helper';
+import { compareText, device, encryptText } from 'src/common/utils/helper';
 import { User } from 'src/models/Schemas/user';
 import { DatabaseService } from 'src/providers/database/database.service';
 import { HelperService } from 'src/Shared/Services/helper.service';
@@ -23,14 +23,16 @@ export class AuthService {
     try {
       const { name, username, phone, country_code, password, email } = payload;
       const user = await this._mongoService.findOne<User>('User', {
-        $and: [
-          {
-            $or: [
-              { phone: phone, country_code: country_code },
-              { email: email },
-            ],
-          },
-        ],
+        options: {
+          $and: [
+            {
+              $or: [
+                { phone: phone, country_code: country_code },
+                { email: email },
+              ],
+            },
+          ],
+        },
       });
 
       // Check for user existed and verified
@@ -50,7 +52,7 @@ export class AuthService {
           throw new HttpException(result.error_message, HttpStatus.BAD_REQUEST);
 
         return {
-          message: `We've sent an code to your  ${payload?.phone ? 'Phone' : 'Email'}.!`,
+          message: `We've sent an code to your ${payload?.phone ? 'Phone' : 'Email'}.!`,
           status: true,
           code: HttpStatus.OK,
         };
@@ -58,7 +60,7 @@ export class AuthService {
 
       // Create new user
 
-      await this._mongoService.create<User>('User', {
+      const createdUser = await this._mongoService.create<User>('User', {
         name,
         password,
         username,
@@ -68,7 +70,7 @@ export class AuthService {
 
       const result = await this._helperService.sendotp(
         'registration',
-        user?.id,
+        createdUser?.id,
       );
       if (result?.error_message)
         throw new HttpException(result?.error_message, HttpStatus.BAD_REQUEST);
@@ -92,24 +94,27 @@ export class AuthService {
       const { userid, password, country_code } = payload;
 
       const { ip_address } = device(request);
+      console.log('🚀 ~ AuthService ~ ip_address:', ip_address);
 
       const user = await this._mongoService.findOne<User>('User', {
-        $and: [
-          {
-            $or: [
-              { email: userid },
-              { username: userid },
-              {
-                $and: [
-                  { country_code: country_code },
-                  {
-                    phone: userid,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+        options: {
+          $and: [
+            {
+              $or: [
+                { email: userid },
+                { username: userid },
+                {
+                  $and: [
+                    { country_code: country_code },
+                    {
+                      phone: userid,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
       });
 
       if (!user)
@@ -135,8 +140,14 @@ export class AuthService {
           HttpStatus.NOT_ACCEPTABLE,
         );
       }
+      const hash = await encryptText(password);
+      console.log('🚀 ~ AuthService ~ hash:', hash);
 
       const passwordCorrectOrNot = await compareText(password, user?.password);
+      console.log(
+        '🚀 ~ AuthService ~ passwordCorrectOrNot:',
+        passwordCorrectOrNot,
+      );
 
       const result = await this._helperService.verifyIpAndUpdate(
         ip_address as string,
@@ -169,7 +180,9 @@ export class AuthService {
       const { userid, type } = payload;
 
       const user = await this._mongoService.findOne<User>('User', {
-        $or: [{ email: userid }, { phone: userid }, { username: userid }],
+        options: {
+          $or: [{ email: userid }, { phone: userid }, { username: userid }],
+        },
       });
 
       if (!user)
@@ -193,11 +206,13 @@ export class AuthService {
     }
   }
 
-  public async veirfyOTP(payload: IVerifyOTP): Promise<IResponse> {
+  public async verifyOTP(payload: IVerifyOTP): Promise<IResponse> {
     try {
       const { userid, otp, type, password = null } = payload;
       const user = await this._mongoService.findOne<User>('User', {
-        $or: [{ email: userid }, { phone: userid }, { username: userid }],
+        options: {
+          $or: [{ email: userid }, { phone: userid }, { username: userid }],
+        },
       });
 
       if (!user)
@@ -224,6 +239,18 @@ export class AuthService {
     } catch (error) {
       console.log('🚀 ~ AuthService ~ register ~ error:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async tryCall() {
+    try {
+      return await this._mongoService.findOne<User>('User', {
+        options: { _id: '671f2fe59c9e0535fe24c84f' },
+        sort: {},
+        populateOptions: [{ path: 'tokens' }, { path: 'login_attempts' }],
+      });
+    } catch (error) {
+      throw error;
     }
   }
 }

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
 import { IEmailTemplate } from '../interface';
 
 export type EmailTemplateDocument = EmailTemplate & Document;
@@ -8,10 +9,7 @@ export class EmailTemplate implements IEmailTemplate {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
-  id?: string;
-
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   slug: string;
 
   @Prop({ required: true })
@@ -19,6 +17,9 @@ export class EmailTemplate implements IEmailTemplate {
 
   @Prop({ required: true })
   subject: string;
+
+  @Prop({ required: false, default: false })
+  deleted: boolean;
 }
 
 export const EmailTemplateSchema = SchemaFactory.createForClass(EmailTemplate);

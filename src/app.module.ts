@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './providers/database/database.module';
 import { AuthModule } from './modules/Auth/auth.module';
 import { EmailModule } from './providers/email/email.module';
+import { ProfileModule } from './modules/Profile/profile.module';
+import { AdminModule } from './modules/Admin/admin.module';
 
 @Module({
   imports: [
@@ -15,18 +17,18 @@ import { EmailModule } from './providers/email/email.module';
       secret: '',
     }),
     AuthModule,
+    ProfileModule,
     MailerModule.forRoot({
       transport: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_SECURE === 'true',
+        host: 'mail.24livehost.com',
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+          user: 'testna12@24livehost.com',
+          pass: 'VPp0Y0TUsez',
         },
       },
     }),
     EmailModule,
+    AdminModule,
   ],
 
   controllers: [AppController],

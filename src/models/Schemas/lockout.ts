@@ -25,7 +25,7 @@ export class Lockout implements ILockout {
 
 export const LockoutSchema = SchemaFactory.createForClass(Lockout);
 
-LockoutSchema.pre('save', function (next) {
+LockoutSchema.pre('validate', function (next) {
   this.lockout_time = 24 * 60 * 60;
   this.lockout_end = new Date(Date.now() + this.lockout_time * 1000);
   next();

@@ -24,9 +24,9 @@ export interface IUser {
   slug?: string;
 
   address?: {
-    location?: string;
-    state?: string;
-    country?: string;
+    location: string;
+    state: string;
+    country: string;
     postal_code?: string;
   }[];
 
@@ -78,7 +78,7 @@ export interface IToken {
   readonly updated_at?: Date;
   access_token_hash: string;
   refresh_token_hash: string;
-  userid: Types.ObjectId;
+  userid: string;
   deleted_at?: Date;
   ip_address: string;
   device: string;
@@ -101,9 +101,21 @@ export interface ILoginAttempt {
 }
 
 export interface IEmailTemplate {
-  id?: string;
   title: string;
   slug: string;
   template: string;
   subject: string;
+  deleted: boolean;
+}
+
+export interface IContentManager {
+  title: string;
+  slug: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  description: string;
+  metaKeywords: string;
+  deleted: boolean;
+  active: boolean;
 }

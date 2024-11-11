@@ -8,7 +8,7 @@ export class EmailService {
   async sendMail(mail: string, message: string, subject: string) {
     try {
       const sentMailInfo = await this.mailerService.sendMail({
-        from: process.env.SMTP_FROM_EMAIL,
+        from: 'support@nestapp.com',
         to: mail,
         subject: subject,
         html: message,

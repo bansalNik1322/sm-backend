@@ -147,11 +147,18 @@ export class User implements IUser {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.pre<UserDocument>('save', async function (next) {
-  this.password = await encryptText(this.password);
+  console.log('Pre-save hook triggered:', this.name);
 
-  if (!this.slug) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
+  if (this.isModified('password') && !this.password.startsWith('$2a$')) {
+    this.password = await encryptText(this.password);
   }
+
+  next();
+});
+
+UserSchema.pre<UserDocument>('validate', async function (next) {
+  console.log('pre validate');
+  this.slug = slugify(this.name, { lower: true, strict: true });
   next();
 });
 
@@ -174,7 +181,10 @@ UserSchema.virtual('tokens', {
 });
 
 UserSchema.virtual('login_attempts', {
-  ref: 'LoginAttempt',
+  ref: 'LoginAttempts',
   localField: '_id',
   foreignField: 'userid',
 });
+
+UserSchema.set('toJSON', { virtuals: true });
+UserSchema.set('toObject', { virtuals: true });

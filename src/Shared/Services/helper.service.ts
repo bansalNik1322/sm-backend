@@ -30,15 +30,19 @@ export class HelperService {
     password_correct: boolean,
   ): Promise<IResponse> => {
     try {
-      const user = await this._mongoService.findById<User>('User', userid);
+      const user = await this._mongoService.findById<User>('User', {
+        id: userid,
+      });
       if (!user) {
         return { error_message: 'User not found' };
       }
 
       const ipLockedOut = await this._mongoService.findOne<Lockout>('Lockout', {
-        ip_address,
-        userid: user.id,
-        lockout_end: { $lt: new Date() },
+        options: {
+          ip_address,
+          userid: user.id,
+          lockout_end: { $gt: new Date() },
+        },
       });
 
       if (ipLockedOut)
@@ -116,20 +120,35 @@ export class HelperService {
     try {
       const otp = generateOTP();
       const otpHash = await encryptText(`${type}_${otp}_${userid}`);
-      const user = await this._mongoService.findById<User>('User', userid);
+      const user = await this._mongoService.findById<User>('User', {
+        id: userid,
+      });
+      console.log('🚀 ~ HelperService ~ sendotp= ~ user:', user);
 
       if (!user) return { error_message: 'User not found' };
 
       let emailTemplate: EmailTemplate;
+
       if (type === 'registration') {
         emailTemplate = await this._mongoService.findOne<EmailTemplate>(
           'EmailTemplate',
-          { title: 'email_verification' },
+          {
+            options: { slug: 'email_verification' },
+          },
         );
       } else if (type === 'forgot') {
         emailTemplate = await this._mongoService.findOne<EmailTemplate>(
           'EmailTemplate',
-          { title: 'email_forgot_password' },
+          {
+            options: { slug: 'email_forgot_password' },
+          },
+        );
+      } else if (type === 'update_email') {
+        emailTemplate = await this._mongoService.findOne<EmailTemplate>(
+          'EmailTemplate',
+          {
+            options: { slug: 'email_update_verification' },
+          },
         );
       }
 
@@ -140,7 +159,7 @@ export class HelperService {
       await this._emailService.sendMail(
         user.email,
         message,
-        emailTemplate.subject,
+        emailTemplate?.subject,
       );
 
       user.otps.push({
@@ -160,10 +179,12 @@ export class HelperService {
     type: string,
     userid: string,
     otp: string,
-    password: string,
+    password: string | null,
   ) {
     try {
-      const user = await this._mongoService.findById<User>('User', userid);
+      const user = await this._mongoService.findById<User>('User', {
+        id: userid,
+      });
       const otps = user?.otps;
       let isOTPCorrect = false;
       if (otps?.length === 0) return { error_message: 'No OTP founds' };
@@ -184,6 +205,7 @@ export class HelperService {
 
       user.otps = [];
       if (type === 'forgot') user.password = password;
+      if (type === 'registration') user.email_verified_at = new Date();
       await user.save();
 
       return;

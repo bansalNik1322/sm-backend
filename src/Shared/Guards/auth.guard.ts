@@ -48,18 +48,18 @@ export class AuthGuard implements CanActivate {
     if (!user)
       throw new HttpException('User Not Found.', HttpStatus.UNAUTHORIZED);
 
-    const userToken = await this._mongoService.findOne<Token>(
-      'Token',
-      {
+    const userToken = await this._mongoService.findOne<Token>('Token', {
+      options: {
         userid: user?.id,
         device: deviceType,
         ip_address,
         deleted: false,
       },
-      {
+      sort: {
         createdAt: 1,
       },
-    );
+      populateOptions: [],
+    });
 
     if (!userToken)
       throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);

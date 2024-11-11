@@ -1,16 +1,21 @@
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
 
+// Encrypt text
 export const encryptText = async (text: string): Promise<string> => {
-  const encrypt_password = await bcrypt.hash(text, 10);
-  return encrypt_password ?? '';
+  const hashedPassword = await bcrypt.hash(text, 10);
+  console.log('Encrypted Text:', hashedPassword); // Debug: Check encrypted text
+  return hashedPassword ?? '';
 };
 
+// Compare text with hashed value
 export const compareText = async (
   text: string,
   hashed: string,
 ): Promise<boolean> => {
-  return await bcrypt.compare(text, hashed);
+  const isMatch = await bcrypt.compare(text, hashed);
+  console.log('Comparing:', text, 'with hash:', hashed, '=> Match:', isMatch); // Debug: Check comparison
+  return isMatch;
 };
 
 export const generateOTP = () => {
@@ -69,6 +74,6 @@ export const device = (req: Request) => {
     userAgent,
     deviceType,
     deviceId,
-    ip_address: ipAddress,
+    ip_address: ipAddress || '0.0.0.0',
   };
 };

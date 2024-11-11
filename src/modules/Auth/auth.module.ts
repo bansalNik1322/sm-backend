@@ -5,6 +5,7 @@ import { HelperService } from 'src/Shared/Services/helper.service';
 import { JWTService } from 'src/Shared/Services/jwt.service';
 import { EmailService } from 'src/providers/email/email.service';
 import { JwtService } from '@nestjs/jwt';
+import { AppLogger } from 'src/providers/logger/logger.service';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -18,6 +19,7 @@ import { AuthController } from './auth.controller';
     HelperService,
     JWTService,
     JwtService,
+    AppLogger,
   ],
   controllers: [AuthController],
 })

@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, RootFilterQuery } from 'mongoose';
+import {
+  Model,
+  PopulateOptions,
+  QueryOptions,
+  RootFilterQuery,
+} from 'mongoose';
+import { ContentManager } from 'src/models/Schemas/cms';
+import { EmailTemplate } from 'src/models/Schemas/email-template';
 import { Lockout } from 'src/models/Schemas/lockout';
 import { LoginAttempt } from 'src/models/Schemas/login-attempts';
 import { Token } from 'src/models/Schemas/token';
@@ -16,12 +23,18 @@ export class DatabaseService {
     private _loginAttemptModel: Model<LoginAttempt>,
     @InjectModel('Lockout') private _lockoutModel: Model<Lockout>,
     @InjectModel('Token') private _tokenModel: Model<Token>,
+    @InjectModel('EmailTemplate')
+    private readonly _emailTemplateModel: Model<EmailTemplate>,
+    @InjectModel('ContentManager')
+    private readonly _contentManagerModel: Model<ContentManager>,
   ) {
     this.models = {
       User: _userModel,
       LoginAttempt: _loginAttemptModel,
       Lockout: _lockoutModel,
+      EmailTemplate: _emailTemplateModel,
       Token: _tokenModel,
+      ContentManager: _contentManagerModel,
     };
   }
 
@@ -36,30 +49,80 @@ export class DatabaseService {
 
   async findOne<T>(
     modelName: string,
-    options: RootFilterQuery<T>,
-    sort: Partial<Record<keyof T, 1 | -1>>,
+    {
+      options,
+      sort = {},
+      populateOptions = [],
+      select = '',
+    }: {
+      options: RootFilterQuery<T>;
+      sort?: Partial<Record<keyof T, 1 | -1>>;
+      populateOptions?: PopulateOptions | PopulateOptions[];
+      select?: string;
+    },
   ) {
     const model = this.getModel<T>(modelName);
-    return await model.findOne(options).sort(sort).exec();
+    return await model
+      .findOne(options, select)
+      .populate(populateOptions)
+      .sort(sort);
   }
 
-  async findAll<T>(modelName: string, options: RootFilterQuery<T>) {
+  async findAll<T>(
+    modelName: string,
+    {
+      options,
+      sort = {},
+      populateOptions = [],
+      select = '',
+      limit = 10,
+      skip = 0,
+      selectOptions = {},
+    }: {
+      options: RootFilterQuery<T>;
+      sort?: Partial<Record<keyof T, 1 | -1>>;
+      populateOptions?: PopulateOptions | PopulateOptions[];
+      select?: string;
+      limit?: number;
+      skip?: number;
+      selectOptions?: Partial<Record<keyof T, 1 | -1>>;
+    },
+  ) {
     const model = this.getModel<T>(modelName);
-    return model.find(options).exec();
+    return model
+      .find(options, select)
+      .select(selectOptions)
+      .populate(populateOptions)
+      .sort(sort)
+      .limit(limit)
+      .skip(skip)
+      .exec();
   }
 
-  async findById<T>(modelName: string, id: string) {
+  async findById<T>(
+    modelName: string,
+    {
+      id,
+      populateOptions = [],
+      select = '',
+    }: {
+      id: string;
+      select?: string;
+      populateOptions?: PopulateOptions | PopulateOptions[];
+    },
+  ) {
     const model = this.getModel<T>(modelName);
-    return model.findById(id).exec();
+    return model.findById(id, select).populate(populateOptions).exec();
   }
 
-  async update<T>(modelName: string, id: string, data: Partial<T>) {
+  async findByIdAndUpdate<T>(modelName: string, id: string, data: Partial<T>) {
     const model = this.getModel<T>(modelName);
     return model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 
-  async countDocuments<T>(modelName: string, options: RootFilterQuery<T>) {
+  async countDocuments<T>(modelName: string, options: QueryOptions<T>) {
     const model = this.getModel<T>(modelName);
+    console.log('🚀 ~ DatabaseService ~ model:', model);
     return await model.countDocuments(options).exec();
   }
 
@@ -68,8 +131,22 @@ export class DatabaseService {
     return model.findByIdAndDelete(id).exec();
   }
 
-  async deleteMany<T>(modelName: string, options: RootFilterQuery<T>) {
+  async deleteMany<T>(modelName: string, options: QueryOptions<T>) {
     const model = this.getModel<T>(modelName);
     return model.deleteMany(options).exec();
+  }
+
+  async findOneAndUpdate<T>(
+    modelName: string,
+    {
+      options,
+      update,
+    }: {
+      options: RootFilterQuery<T>;
+      update: Partial<T>;
+    },
+  ) {
+    const model = this.getModel<T>(modelName);
+    return await model.findOneAndUpdate(options, update).exec();
   }
 }
