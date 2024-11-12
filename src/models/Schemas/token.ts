@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { IToken } from '../interface';
@@ -16,7 +16,7 @@ export class Token implements IToken {
   @Prop({ required: true, default: false })
   deleted: boolean;
 
-  @Prop({ required: false })
+  @Prop()
   deleted_at?: Date;
 
   @Prop({ required: true, ref: 'User' })
@@ -45,3 +45,15 @@ TokenSchema.methods.restoreRecord = function () {
   this.deletedAt = null;
   return this.save();
 };
+
+TokenSchema.methods.softDelete = async function () {
+  this.deleted_at = new Date();
+  await this.save();
+};
+
+TokenSchema.pre(/^find/, function (next) {
+  const query = this as unknown as mongoose.Query<any, Document>;
+
+  query.where({ deleted_at: { $exists: false } });
+  next();
+});

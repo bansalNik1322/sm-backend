@@ -8,8 +8,10 @@ import {
 } from 'mongoose';
 import { ContentManager } from 'src/models/Schemas/cms';
 import { EmailTemplate } from 'src/models/Schemas/email-template';
+import { Faq } from 'src/models/Schemas/faq';
 import { Lockout } from 'src/models/Schemas/lockout';
 import { LoginAttempt } from 'src/models/Schemas/login-attempts';
+import { SecurityQuestion } from 'src/models/Schemas/security-question';
 import { Token } from 'src/models/Schemas/token';
 import { User } from 'src/models/Schemas/user';
 
@@ -19,6 +21,9 @@ export class DatabaseService {
 
   constructor(
     @InjectModel('User') private _userModel: Model<User>,
+    @InjectModel('Faq') private _faqModel: Model<Faq>,
+    @InjectModel('SecurityQuestion')
+    private _securityQuestionModel: Model<SecurityQuestion>,
     @InjectModel('LoginAttempts')
     private _loginAttemptModel: Model<LoginAttempt>,
     @InjectModel('Lockout') private _lockoutModel: Model<Lockout>,
@@ -35,6 +40,8 @@ export class DatabaseService {
       EmailTemplate: _emailTemplateModel,
       Token: _tokenModel,
       ContentManager: _contentManagerModel,
+      SecurityQuestion: _securityQuestionModel,
+      Faq: _faqModel,
     };
   }
 
@@ -117,7 +124,7 @@ export class DatabaseService {
 
   async findByIdAndUpdate<T>(modelName: string, id: string, data: Partial<T>) {
     const model = this.getModel<T>(modelName);
-    return model.findByIdAndUpdate(id, data, { new: true }).exec();
+    return model.findByIdAndUpdate(id, data).exec();
   }
 
   async countDocuments<T>(modelName: string, options: QueryOptions<T>) {

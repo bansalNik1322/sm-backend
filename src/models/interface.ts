@@ -105,7 +105,7 @@ export interface IEmailTemplate {
   slug: string;
   template: string;
   subject: string;
-  deleted: boolean;
+  deleted_at: Date;
 }
 
 export interface IContentManager {
@@ -116,6 +116,21 @@ export interface IContentManager {
   metaDescription?: string;
   description: string;
   metaKeywords: string;
-  deleted: boolean;
+  deleted_at: Date;
   active: boolean;
+}
+
+export interface ISecurityQuestion {
+  question: string;
+  status: boolean;
+  deleted_at: Date;
+  user_assigned: string[];
+}
+
+export interface IFaq {
+  question: string;
+  answer: string;
+  category: string;
+  status: boolean;
+  deleted_at: Date;
 }

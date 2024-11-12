@@ -13,35 +13,35 @@ import { IRequest } from 'src/common/interfaces/global.interface';
 import { AppLogger } from 'src/providers/logger/logger.service';
 import { PaginationDTO } from 'src/Shared/DTO/shared.dto';
 
-import { ContentManagerService } from './cms.service';
-import { CreateContentManager, UpdateContentManager } from './cms.dto';
+import { FaqService } from './faq.service';
+import { CreateFaq, UpdateFaq } from './faq.dto';
 
-@Controller('admin/content-manager')
-export class ContentManagerController {
+@Controller('admin/faq')
+export class FaqController {
   constructor(
-    private readonly _contentManagerService: ContentManagerService,
+    private readonly _faqService: FaqService,
     private readonly _logger: AppLogger,
   ) {}
   @Get()
-  public async getAllContent(
+  public async getAllFaq(
     @Req() req: IRequest,
     @Body() payload: PaginationDTO,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.getAllContent(payload);
+      return await this._faqService.getAllFaq(payload);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Get('slug')
-  public async getContentBySlug(
+  @Get(':id')
+  public async getFaq(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
+    @Param('id') id: string,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.getContentBySlug(slug);
+      return await this._faqService.getFaq(id);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
@@ -49,39 +49,39 @@ export class ContentManagerController {
   }
 
   @Post()
-  public async createContent(
+  public async createFaq(
     @Req() req: IRequest,
-    @Body() payload: CreateContentManager,
+    @Body() payload: CreateFaq,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.createContent(payload);
+      return await this._faqService.createFaq(payload);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Put(':slug')
-  public async updateContent(
+  @Put(':id')
+  public async updateFaq(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
-    @Body() payload: UpdateContentManager,
+    @Param('id') id: string,
+    @Body() payload: UpdateFaq,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.updateContent(slug, payload);
+      return await this._faqService.updateFaq(id, payload);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Delete(':slug')
-  public async deleteContent(
+  @Delete(':id')
+  public async deleteFaq(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
+    @Param('id') id: string,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.deleteContent(slug);
+      return await this._faqService.deleteFaq(id);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);

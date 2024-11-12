@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
+
 import { ILoginAttempt } from '../interface';
 
 export type LoginAttemptDocument = LoginAttempt & Document;
@@ -20,7 +21,7 @@ export class LoginAttempt implements ILoginAttempt {
   @Prop({ required: true, default: new Date() })
   attempted_at: Date;
 
-  @Prop({ required: false })
+  @Prop()
   deleted_at: Date;
 }
 
@@ -30,3 +31,10 @@ LoginAttemptSchema.methods.softDelete = function () {
   this.deletedAt = new Date();
   return this.save();
 };
+
+LoginAttemptSchema.pre(/^find/, function (next) {
+  const query = this as unknown as mongoose.Query<any, Document>;
+
+  query.where({ deleted_at: { $exists: false } });
+  next();
+});

@@ -109,7 +109,7 @@ export interface IUpdateEmailTemplate {
 export interface IGetAllEmailTemplates extends IPagination {}
 export interface IGetAllContentManager extends IPagination {}
 
-export class IUpdateContentManager {
+export interface IUpdateContentManager {
   title?: string;
   content?: string;
   metaTitle?: string;
@@ -118,7 +118,7 @@ export class IUpdateContentManager {
   metaKeywords?: string;
   active: boolean;
 }
-export class ICreateContentManager {
+export interface ICreateContentManager {
   title: string;
   slug: string;
   content: string;
@@ -127,4 +127,26 @@ export class ICreateContentManager {
   description: string;
   metaKeywords: string;
   active: boolean;
+}
+
+export interface IGetAllData extends IPagination {}
+
+export interface ICreateFaq {
+  category: string;
+  question: string;
+  answer: string;
+}
+
+export class IUpdateFaq {
+  category?: string;
+  question?: string;
+  answer?: string;
+}
+
+export class ICreateSecurityQuestion {
+  question: string;
+}
+
+export class IUpdateSecurityQuestion {
+  question?: string;
 }

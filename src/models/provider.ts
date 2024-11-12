@@ -1,4 +1,5 @@
 import { Connection } from 'mongoose';
+
 import { UserSchema } from './Schemas/user';
 
 export const USER_PROVIDER = [

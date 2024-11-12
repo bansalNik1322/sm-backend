@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ILockout } from '../interface';
 import { IpBlockReasons } from 'src/common/constants/enum';
+
+import { ILockout } from '../interface';
 
 export type LockoutDocument = Lockout & Document;
 

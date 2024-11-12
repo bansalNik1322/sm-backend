@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import slugify from 'slugify';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { UserAccountStatus, UserAccountType } from 'src/common/constants/enum';
 import { encryptText } from 'src/common/utils/helper';
 
@@ -19,16 +19,16 @@ export class User implements IUser {
   @Prop({ required: false, unique: true })
   email: string;
 
-  @Prop({ required: false })
+  @Prop()
   country_code: string;
 
   @Prop({ required: false, unique: true })
   phone: string;
 
-  @Prop({ required: false })
+  @Prop()
   password: string;
 
-  @Prop({ required: false })
+  @Prop()
   profile_image: string;
 
   @Prop({ type: [String], default: [] })
@@ -138,10 +138,7 @@ export class User implements IUser {
     answer: string;
   }[];
 
-  @Prop({
-    required: false,
-    default: null,
-  })
+  @Prop()
   deleted_at: Date;
 }
 
@@ -188,3 +185,17 @@ UserSchema.virtual('login_attempts', {
 
 UserSchema.set('toJSON', { virtuals: true });
 UserSchema.set('toObject', { virtuals: true });
+
+UserSchema.pre(/^find/, function (next) {
+  const query = this as unknown as mongoose.Query<any, Document>;
+
+  if (query.getOptions().bypassPreMiddleware) {
+    return next();
+  }
+
+  query.where({
+    deleted_at: { $exists: false },
+    status: { $ne: UserAccountStatus.deleted },
+  });
+  next();
+});

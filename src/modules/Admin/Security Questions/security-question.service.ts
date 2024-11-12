@@ -1,31 +1,32 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
-  ICreateContentManager,
+  ICreateSecurityQuestion,
   IGetAllContentManager,
   IResponse,
-  IUpdateContentManager,
+  IUpdateSecurityQuestion,
 } from 'src/common/interfaces/global.interface';
-import { ContentManager } from 'src/models/Schemas/cms';
+import { SecurityQuestion } from 'src/models/Schemas/security-question';
 import { DatabaseService } from 'src/providers/database/database.service';
 
 @Injectable()
-export class ContentManagerService {
+export class SecurityQuestionService {
   constructor(private readonly _mongoService: DatabaseService) {}
-  public async getAllContent(
+
+  public async getAllSecurityQuestions(
     payload: IGetAllContentManager,
   ): Promise<IResponse> {
     try {
       const { page = 1, limit = 10 } = payload;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
       const total = Math.ceil(
-        (await this._mongoService.countDocuments<ContentManager>(
-          'ContentManager',
+        (await this._mongoService.countDocuments<SecurityQuestion>(
+          'SecurityQuestion',
           {},
         )) / limit,
       );
 
-      const data = await this._mongoService.findAll<ContentManager>(
-        'ContentManager',
+      const data = await this._mongoService.findAll<SecurityQuestion>(
+        'SecurityQuestion',
         {
           options: {},
           limit,
@@ -43,23 +44,20 @@ export class ContentManagerService {
           total,
           data,
         },
-
         message: 'Data Fetched Successfully!!',
       };
     } catch (error) {
-      console.log('🚀 ~ ContentManagerService ~ getAllContent ~ error:', error);
       throw new HttpException(error.message, error.INTERNAL_SERVER_ERROR);
     }
   }
 
-  public async getContentBySlug(slug: string): Promise<IResponse> {
+  public async getSecurityQuestion(id: string): Promise<IResponse> {
     try {
-      const data = await this._mongoService.findOne<ContentManager>(
-        'ContentManager',
+      const data = await this._mongoService.findOne<SecurityQuestion>(
+        'SecurityQuestion',
         {
           options: {
-            slug,
-            deleted_at: new Date(),
+            id,
           },
         },
       );
@@ -78,87 +76,79 @@ export class ContentManagerService {
     }
   }
 
-  public async createContent(
-    payload: ICreateContentManager,
+  public async createSecurityQuestion(
+    payload: ICreateSecurityQuestion,
   ): Promise<IResponse> {
     try {
-      await this._mongoService.create<ContentManager>(
-        'ContentManager',
+      await this._mongoService.create<SecurityQuestion>(
+        'SecurityQuestion',
         payload,
       );
       return {
         status: true,
         code: HttpStatus.OK,
-        message: 'Content Created Successfully!!',
+        message: 'Security Question Created Successfully!!',
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
-  public async updateContent(
-    slug: string,
-    payload: IUpdateContentManager,
+  public async updateSecurityQuestions(
+    id: string,
+    payload: IUpdateSecurityQuestion,
   ): Promise<IResponse> {
     try {
-      const {
-        title,
-        content,
-        metaTitle,
-        metaDescription,
-        description,
-        metaKeywords,
-        active,
-      } = payload;
+      const { question } = payload;
 
-      const contentManager =
-        await this._mongoService.findOneAndUpdate<ContentManager>(
-          'ContentManager',
+      const securityQuestion =
+        await this._mongoService.findOneAndUpdate<SecurityQuestion>(
+          'SecurityQuestion',
           {
-            options: { slug },
+            options: {
+              id,
+              user_assigned: { $size: 0 },
+            },
             update: {
-              ...(title && { title }),
-              ...(content && { content }),
-              ...(metaTitle && { metaTitle }),
-              ...(metaDescription && { metaDescription }),
-              ...(description && { description }),
-              ...(metaKeywords && { metaKeywords }),
-              ...(active && { active }),
+              ...(question && { question }),
             },
           },
         );
 
-      if (!contentManager)
-        throw new HttpException('Invalid Slug!', HttpStatus.BAD_REQUEST);
+      if (!securityQuestion)
+        throw new HttpException('Invalid Id!', HttpStatus.BAD_REQUEST);
 
       return {
         status: true,
         code: HttpStatus.OK,
-        message: 'Content Updated Successfully!!',
+        message: 'Security Question Updated Successfully!!',
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
-  public async deleteContent(slug: string): Promise<IResponse> {
+  public async deleteSecurityQuestions(id: string): Promise<IResponse> {
     try {
-      const contentManager =
-        await this._mongoService.findOneAndUpdate<ContentManager>(
-          'ContentManager',
+      const securityQuestion =
+        await this._mongoService.findOneAndUpdate<SecurityQuestion>(
+          'SecurityQuestion',
           {
-            options: { slug },
+            options: {
+              id,
+              user_assigned: { $size: 0 },
+            },
             update: { deleted_at: new Date() },
           },
         );
 
-      if (!contentManager)
-        throw new HttpException('Invalid Slug!', HttpStatus.BAD_REQUEST);
+      if (!securityQuestion)
+        throw new HttpException('Invalid Id!', HttpStatus.BAD_REQUEST);
 
       return {
         status: true,
         code: HttpStatus.OK,
-        message: 'Content Deleted Successfully!!',
+        message: 'Security Question Deleted Successfully!!',
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);

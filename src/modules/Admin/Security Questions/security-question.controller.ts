@@ -13,35 +13,41 @@ import { IRequest } from 'src/common/interfaces/global.interface';
 import { AppLogger } from 'src/providers/logger/logger.service';
 import { PaginationDTO } from 'src/Shared/DTO/shared.dto';
 
-import { ContentManagerService } from './cms.service';
-import { CreateContentManager, UpdateContentManager } from './cms.dto';
+import { SecurityQuestionService } from './security-question.service';
+import {
+  UpdateSecurityQuestion,
+  CreateSecurityQuestion,
+} from './security-question.dto';
 
-@Controller('admin/content-manager')
-export class ContentManagerController {
+@Controller('admin/security-question')
+export class SecurityQuestionController {
   constructor(
-    private readonly _contentManagerService: ContentManagerService,
+    private readonly _securityQuestionService: SecurityQuestionService,
     private readonly _logger: AppLogger,
   ) {}
+
   @Get()
-  public async getAllContent(
+  public async getAllSecurityQuestions(
     @Req() req: IRequest,
     @Body() payload: PaginationDTO,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.getAllContent(payload);
+      return await this._securityQuestionService.getAllSecurityQuestions(
+        payload,
+      );
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Get('slug')
-  public async getContentBySlug(
+  @Get(':id')
+  public async getSecurityQuestion(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
+    @Param('id') id: string,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.getContentBySlug(slug);
+      return await this._securityQuestionService.getSecurityQuestion(id);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
@@ -49,39 +55,44 @@ export class ContentManagerController {
   }
 
   @Post()
-  public async createContent(
+  public async createSecurityQuestion(
     @Req() req: IRequest,
-    @Body() payload: CreateContentManager,
+    @Body() payload: CreateSecurityQuestion,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.createContent(payload);
+      return await this._securityQuestionService.createSecurityQuestion(
+        payload,
+      );
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Put(':slug')
-  public async updateContent(
+  @Put(':id')
+  public async updateSecurityQuestions(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
-    @Body() payload: UpdateContentManager,
+    @Param('id') id: string,
+    @Body() payload: UpdateSecurityQuestion,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.updateContent(slug, payload);
+      return await this._securityQuestionService.updateSecurityQuestions(
+        id,
+        payload,
+      );
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Delete(':slug')
-  public async deleteContent(
+  @Delete(':id')
+  public async deleteSecurityQuestions(
     @Req() req: IRequest,
-    @Param('slug') slug: string,
+    @Param('id') id: string,
   ): Promise<unknown> {
     try {
-      return await this._contentManagerService.deleteContent(slug);
+      return await this._securityQuestionService.deleteSecurityQuestions(id);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
       throw new HttpException(error.message, error.status);

@@ -4,6 +4,8 @@ import { LockoutSchema } from './Schemas/lockout';
 import { LoginAttemptSchema } from './Schemas/login-attempts';
 import { EmailTemplateSchema } from './Schemas/email-template';
 import { ContentManagerSchema } from './Schemas/cms';
+import { SecurityQuestionSchema } from './Schemas/security-question';
+import { FaqSchema } from './Schemas/faq';
 
 export const models = [
   {
@@ -29,5 +31,13 @@ export const models = [
   {
     name: 'ContentManager',
     schema: ContentManagerSchema,
+  },
+  {
+    name: 'SecurityQuestion',
+    schema: SecurityQuestionSchema,
+  },
+  {
+    name: 'Faq',
+    schema: FaqSchema,
   },
 ];

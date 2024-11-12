@@ -8,11 +8,6 @@ import { UpdateEmail, UpdateProfile } from './profile.dto';
 export class ProfileController {
   constructor(private readonly _profileService: ProfileService) {}
 
-  @Post('update-email')
-  async updateEmail(@Body() payload: UpdateEmail, @Req() request: IRequest) {
-    return await this._profileService.updateEmail(payload, request);
-  }
-
   @Get('get-profile')
   async getProfile(@Req() request: IRequest) {
     return await this._profileService.getProfile(request);

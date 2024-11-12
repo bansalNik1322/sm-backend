@@ -36,14 +36,14 @@ export class EmailTemplateService {
       const total = Math.ceil(
         (await this._mongoService.countDocuments<EmailTemplate>(
           'EmailTemplate',
-          { deleted: false },
+          {},
         )) / limit,
       );
 
       const data = await this._mongoService.findAll<EmailTemplate>(
         'EmailTemplate',
         {
-          options: { deleted: false },
+          options: {},
           limit,
           skip,
           select: 'title slug subject template',
@@ -68,7 +68,6 @@ export class EmailTemplateService {
         {
           options: {
             slug: slug,
-            deleted: false,
           },
           select: 'title slug subject template',
         },
@@ -97,7 +96,7 @@ export class EmailTemplateService {
         await this._mongoService.findOneAndUpdate<EmailTemplate>(
           'EmailTemplate',
           {
-            options: { slug, deleted: false },
+            options: { slug },
             update: {
               ...(title ? { title } : {}),
               ...(template ? { template } : {}),
@@ -126,10 +125,9 @@ export class EmailTemplateService {
           'EmailTemplate',
           {
             options: {
-              deleted: false,
               slug: slug,
             },
-            update: { deleted: true },
+            update: { deleted_at: new Date() },
           },
         );
 
