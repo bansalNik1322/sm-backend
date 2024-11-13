@@ -32,6 +32,7 @@ export class SecurityQuestionController {
     @Body() payload: PaginationDTO,
   ): Promise<unknown> {
     try {
+      console.log('Got An API Call herea');
       return await this._securityQuestionService.getAllSecurityQuestions(
         payload,
       );
@@ -76,6 +77,7 @@ export class SecurityQuestionController {
     @Body() payload: UpdateSecurityQuestion,
   ): Promise<unknown> {
     try {
+      console.log('Got Here');
       return await this._securityQuestionService.updateSecurityQuestions(
         id,
         payload,

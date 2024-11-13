@@ -25,7 +25,7 @@ export class FaqService {
         limit,
         skip,
         selectOptions: {
-          deleted_at: -1,
+          deleted_at: 0,
         },
       });
 

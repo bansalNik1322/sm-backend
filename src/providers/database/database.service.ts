@@ -5,6 +5,7 @@ import {
   PopulateOptions,
   QueryOptions,
   RootFilterQuery,
+  UpdateQuery,
 } from 'mongoose';
 import { ContentManager } from 'src/models/Schemas/cms';
 import { EmailTemplate } from 'src/models/Schemas/email-template';
@@ -92,7 +93,7 @@ export class DatabaseService {
       select?: string;
       limit?: number;
       skip?: number;
-      selectOptions?: Partial<Record<keyof T, 1 | -1>>;
+      selectOptions?: Partial<Record<keyof T, 1 | -1 | 0>>;
     },
   ) {
     const model = this.getModel<T>(modelName);
@@ -150,7 +151,7 @@ export class DatabaseService {
       update,
     }: {
       options: RootFilterQuery<T>;
-      update: Partial<T>;
+      update: UpdateQuery<T>;
     },
   ) {
     const model = this.getModel<T>(modelName);

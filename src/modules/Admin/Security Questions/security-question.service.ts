@@ -18,12 +18,11 @@ export class SecurityQuestionService {
     try {
       const { page = 1, limit = 10 } = payload;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
-      const total = Math.ceil(
-        (await this._mongoService.countDocuments<SecurityQuestion>(
-          'SecurityQuestion',
-          {},
-        )) / limit,
+      const total = await this._mongoService.countDocuments<SecurityQuestion>(
+        'SecurityQuestion',
+        {},
       );
+      const totalPages = Math.ceil(total / limit);
 
       const data = await this._mongoService.findAll<SecurityQuestion>(
         'SecurityQuestion',
@@ -31,8 +30,9 @@ export class SecurityQuestionService {
           options: {},
           limit,
           skip,
+          select: 'question status createdAt',
           selectOptions: {
-            deleted_at: -1,
+            deleted_at: 0,
           },
         },
       );
@@ -42,7 +42,8 @@ export class SecurityQuestionService {
         code: HttpStatus.OK,
         data: {
           total,
-          data,
+          pages: totalPages,
+          result: data,
         },
         message: 'Data Fetched Successfully!!',
       };
@@ -57,13 +58,12 @@ export class SecurityQuestionService {
         'SecurityQuestion',
         {
           options: {
-            id,
+            _id: id,
           },
         },
       );
 
-      if (!data)
-        throw new HttpException('Invalid Slug!', HttpStatus.BAD_REQUEST);
+      if (!data) throw new HttpException('Invalid Id!', HttpStatus.BAD_REQUEST);
 
       return {
         data,
@@ -99,19 +99,14 @@ export class SecurityQuestionService {
     payload: IUpdateSecurityQuestion,
   ): Promise<IResponse> {
     try {
-      const { question } = payload;
-
+      const { question, status = false } = payload;
       const securityQuestion =
-        await this._mongoService.findOneAndUpdate<SecurityQuestion>(
+        await this._mongoService.findByIdAndUpdate<SecurityQuestion>(
           'SecurityQuestion',
+          id,
           {
-            options: {
-              id,
-              user_assigned: { $size: 0 },
-            },
-            update: {
-              ...(question && { question }),
-            },
+            ...(question && { question }),
+            ...(status !== undefined && { status }),
           },
         );
 

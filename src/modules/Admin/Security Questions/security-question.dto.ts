@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateSecurityQuestion {
   @IsNotEmpty()
@@ -10,4 +10,8 @@ export class UpdateSecurityQuestion {
   @IsOptional()
   @IsString()
   question: string;
+
+  @IsOptional()
+  @IsBoolean()
+  status: boolean;
 }

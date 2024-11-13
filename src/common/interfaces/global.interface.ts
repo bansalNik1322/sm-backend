@@ -149,4 +149,5 @@ export class ICreateSecurityQuestion {
 
 export class IUpdateSecurityQuestion {
   question?: string;
+  status?: boolean;
 }
