@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { IRequest } from 'src/common/interfaces/global.interface';
@@ -29,10 +30,10 @@ export class SecurityQuestionController {
   @Get()
   public async getAllSecurityQuestions(
     @Req() req: IRequest,
-    @Body() payload: PaginationDTO,
+    @Query() payload: PaginationDTO,
   ): Promise<unknown> {
     try {
-      console.log('Got An API Call herea');
+      console.log('🚀 ~ SecurityQuestionController ~ payload:', payload);
       return await this._securityQuestionService.getAllSecurityQuestions(
         payload,
       );

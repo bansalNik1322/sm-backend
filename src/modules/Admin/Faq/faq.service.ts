@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import {
   ICreateFaq,
-  IGetAllData,
+  IGetAllFaq,
   IResponse,
   IUpdateFaq,
 } from 'src/common/interfaces/global.interface';
@@ -13,15 +13,21 @@ import { DatabaseService } from 'src/providers/database/database.service';
 export class FaqService {
   constructor(private readonly _mongoService: DatabaseService) {}
 
-  public async getAllFaq(payload: IGetAllData): Promise<IResponse> {
+  public async getAllFaq(payload: IGetAllFaq): Promise<IResponse> {
     try {
-      const { page = 1, limit = 10 } = payload;
+      const { category = null } = payload;
+      const page = Number(payload?.page) || 1;
+      const limit = Number(payload?.limit) || 10;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
-      const total = await this._mongoService.countDocuments<Faq>('Faq', {});
+
+      const total = await this._mongoService.countDocuments<Faq>('Faq', {
+        ...(category ? { category } : {}),
+        deleted_at: { $exists: false },
+      });
       const totalPages = Math.ceil(total / limit);
 
       const data = await this._mongoService.findAll<Faq>('Faq', {
-        options: {},
+        options: { ...(category ? { category } : {}) },
         limit,
         skip,
         selectOptions: {
@@ -33,6 +39,7 @@ export class FaqService {
         status: true,
         code: HttpStatus.OK,
         data: {
+          limit,
           total,
           result: data,
           pages: totalPages,

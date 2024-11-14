@@ -3,8 +3,8 @@ import { Request } from 'express';
 import { UserAccountType } from '../constants/enum';
 
 export interface IPagination {
-  page: number;
-  limit: number;
+  page: string;
+  limit: string;
 }
 export interface IRegisterUser {
   phone?: string;
@@ -141,6 +141,10 @@ export class IUpdateFaq {
   category?: string;
   question?: string;
   answer?: string;
+}
+
+export interface IGetAllFaq extends IPagination {
+  category?: string;
 }
 
 export class ICreateSecurityQuestion {

@@ -7,14 +7,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { IRequest } from 'src/common/interfaces/global.interface';
 import { AppLogger } from 'src/providers/logger/logger.service';
-import { PaginationDTO } from 'src/Shared/DTO/shared.dto';
 
 import { FaqService } from './faq.service';
-import { CreateFaq, UpdateFaq } from './faq.dto';
+import { CreateFaq, GetAllFaq, UpdateFaq } from './faq.dto';
 
 @Controller('admin/faq')
 export class FaqController {
@@ -25,7 +25,7 @@ export class FaqController {
   @Get()
   public async getAllFaq(
     @Req() req: IRequest,
-    @Body() payload: PaginationDTO,
+    @Query() payload: GetAllFaq,
   ): Promise<unknown> {
     try {
       return await this._faqService.getAllFaq(payload);

@@ -15,7 +15,8 @@ export class ContentManagerService {
     payload: IGetAllContentManager,
   ): Promise<IResponse> {
     try {
-      const { page = 1, limit = 10 } = payload;
+      const page = Number(payload?.page) ?? 1;
+      const limit = Number(payload?.limit) ?? 10;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
       const total = Math.ceil(
         (await this._mongoService.countDocuments<ContentManager>(

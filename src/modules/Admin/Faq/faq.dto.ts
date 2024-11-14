@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PaginationDTO } from 'src/Shared/DTO/shared.dto';
 
 export class CreateFaq {
   @IsNotEmpty()
@@ -12,6 +13,12 @@ export class CreateFaq {
   @IsNotEmpty()
   @IsString()
   category: string;
+}
+
+export class GetAllFaq extends PaginationDTO {
+  @IsOptional()
+  @IsString()
+  category?: string;
 }
 
 export class UpdateFaq {

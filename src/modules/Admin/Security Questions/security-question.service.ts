@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 import {
   ICreateSecurityQuestion,
   IGetAllContentManager,
@@ -16,11 +17,13 @@ export class SecurityQuestionService {
     payload: IGetAllContentManager,
   ): Promise<IResponse> {
     try {
-      const { page = 1, limit = 10 } = payload;
+      const page = Number(payload?.page) ?? 1;
+      const limit = Number(payload?.limit) || 10;
+      console.log('🚀 ~ SecurityQuestionService ~ limit:', limit, page);
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
       const total = await this._mongoService.countDocuments<SecurityQuestion>(
         'SecurityQuestion',
-        {},
+        { deleted_at: { $exists: false } },
       );
       const totalPages = Math.ceil(total / limit);
 
@@ -44,6 +47,7 @@ export class SecurityQuestionService {
           total,
           pages: totalPages,
           result: data,
+          limit,
         },
         message: 'Data Fetched Successfully!!',
       };
@@ -54,11 +58,12 @@ export class SecurityQuestionService {
 
   public async getSecurityQuestion(id: string): Promise<IResponse> {
     try {
+      const objectId = new Types.ObjectId(id);
       const data = await this._mongoService.findOne<SecurityQuestion>(
         'SecurityQuestion',
         {
           options: {
-            _id: id,
+            _id: objectId,
           },
         },
       );
@@ -72,7 +77,7 @@ export class SecurityQuestionService {
         message: 'Data Fetched Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -90,7 +95,7 @@ export class SecurityQuestionService {
         message: 'Security Question Created Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -119,7 +124,7 @@ export class SecurityQuestionService {
         message: 'Security Question Updated Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 500);
     }
   }
 
@@ -130,7 +135,7 @@ export class SecurityQuestionService {
           'SecurityQuestion',
           {
             options: {
-              id,
+              _id: id,
               user_assigned: { $size: 0 },
             },
             update: { deleted_at: new Date() },
@@ -146,7 +151,7 @@ export class SecurityQuestionService {
         message: 'Security Question Deleted Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 500);
     }
   }
 }
