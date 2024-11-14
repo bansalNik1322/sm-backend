@@ -84,7 +84,7 @@ export class FaqController {
       return await this._faqService.deleteFaq(id);
     } catch (error) {
       this._logger.error(error.message, error.stack, req);
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 500);
     }
   }
 }

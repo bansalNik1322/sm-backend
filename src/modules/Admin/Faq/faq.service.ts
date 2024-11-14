@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 import {
   ICreateFaq,
   IGetAllData,
@@ -16,9 +17,8 @@ export class FaqService {
     try {
       const { page = 1, limit = 10 } = payload;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
-      const total = Math.ceil(
-        (await this._mongoService.countDocuments<Faq>('Faq', {})) / limit,
-      );
+      const total = await this._mongoService.countDocuments<Faq>('Faq', {});
+      const totalPages = Math.ceil(total / limit);
 
       const data = await this._mongoService.findAll<Faq>('Faq', {
         options: {},
@@ -34,13 +34,14 @@ export class FaqService {
         code: HttpStatus.OK,
         data: {
           total,
-          data,
+          result: data,
+          pages: totalPages,
         },
 
         message: 'Data Fetched Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -59,7 +60,7 @@ export class FaqService {
         message: 'Data Fetched Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -72,7 +73,7 @@ export class FaqService {
         message: 'Faq Created Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -97,14 +98,16 @@ export class FaqService {
         message: 'Faq Updated Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   public async deleteFaq(id: string): Promise<IResponse> {
     try {
+      const objectId = new Types.ObjectId(id);
+
       const faq = await this._mongoService.findOneAndUpdate<Faq>('Faq', {
-        options: { id },
+        options: { _id: objectId },
         update: { deleted_at: new Date() },
       });
 
@@ -117,7 +120,7 @@ export class FaqService {
         message: 'Faq Deleted Successfully!!',
       };
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
