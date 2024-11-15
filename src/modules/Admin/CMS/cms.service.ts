@@ -15,15 +15,14 @@ export class ContentManagerService {
     payload: IGetAllContentManager,
   ): Promise<IResponse> {
     try {
-      const page = Number(payload?.page) ?? 1;
-      const limit = Number(payload?.limit) ?? 10;
+      const page = Number(payload?.page) || 1;
+      const limit = Number(payload?.limit) || 10;
       const skip = (page - 1) * limit ? (page - 1) * limit : 0;
-      const total = Math.ceil(
-        (await this._mongoService.countDocuments<ContentManager>(
-          'ContentManager',
-          {},
-        )) / limit,
+      const total = await this._mongoService.countDocuments<ContentManager>(
+        'ContentManager',
+        { deleted_at: { $exists: false } },
       );
+      const totalPages = Math.ceil(total / limit);
 
       const data = await this._mongoService.findAll<ContentManager>(
         'ContentManager',
@@ -32,7 +31,7 @@ export class ContentManagerService {
           limit,
           skip,
           selectOptions: {
-            deleted_at: -1,
+            deleted_at: 0,
           },
         },
       );
@@ -42,13 +41,13 @@ export class ContentManagerService {
         code: HttpStatus.OK,
         data: {
           total,
-          data,
+          result: data,
+          limit,
+          pages: totalPages,
         },
-
         message: 'Data Fetched Successfully!!',
       };
     } catch (error) {
-      console.log('🚀 ~ ContentManagerService ~ getAllContent ~ error:', error);
       throw new HttpException(error.message, error.INTERNAL_SERVER_ERROR);
     }
   }
@@ -83,16 +82,27 @@ export class ContentManagerService {
     payload: ICreateContentManager,
   ): Promise<IResponse> {
     try {
-      await this._mongoService.create<ContentManager>(
+      const result = await this._mongoService.updateOne<ContentManager>(
         'ContentManager',
-        payload,
+        {
+          options: {
+            slug: payload.slug,
+          },
+          update: payload,
+          upsert: true,
+        },
       );
+      if (result.upsertedCount === 0) {
+        throw new HttpException('Slug already exists', HttpStatus.BAD_REQUEST);
+      }
+
       return {
         status: true,
         code: HttpStatus.OK,
         message: 'Content Created Successfully!!',
       };
     } catch (error) {
+      console.log('🚀 ~ ContentManagerService ~ error:', error);
       throw new HttpException(error.message, error.status);
     }
   }
@@ -124,7 +134,7 @@ export class ContentManagerService {
               ...(metaDescription && { metaDescription }),
               ...(description && { description }),
               ...(metaKeywords && { metaKeywords }),
-              ...(active && { active }),
+              ...(active !== undefined && { active }),
             },
           },
         );
@@ -143,6 +153,7 @@ export class ContentManagerService {
   }
 
   public async deleteContent(slug: string): Promise<IResponse> {
+    console.log('🚀 ~ ContentManagerService ~ deleteContent ~ slug:', slug);
     try {
       const contentManager =
         await this._mongoService.findOneAndUpdate<ContentManager>(

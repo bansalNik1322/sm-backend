@@ -97,7 +97,7 @@ export class DatabaseService {
     },
   ) {
     const model = this.getModel<T>(modelName);
-    return model
+    return await model
       .find(options, select)
       .select(selectOptions)
       .populate(populateOptions)
@@ -156,5 +156,17 @@ export class DatabaseService {
   ) {
     const model = this.getModel<T>(modelName);
     return await model.findOneAndUpdate(options, update).exec();
+  }
+
+  async updateOne<T>(
+    modelName: string,
+    {
+      options,
+      update,
+      upsert,
+    }: { options: QueryOptions<T>; update: UpdateQuery<T>; upsert: boolean },
+  ) {
+    const model = this.getModel<T>(modelName);
+    return model.updateOne(options, update, { upsert: upsert }).exec();
   }
 }

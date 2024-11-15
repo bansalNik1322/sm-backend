@@ -89,7 +89,7 @@ export class FaqService {
       const { question, answer, category } = payload;
 
       const faq = await this._mongoService.findOneAndUpdate<Faq>('Faq', {
-        options: { id },
+        options: { _id: id },
         update: {
           ...(category && { category }),
           ...(question && { question }),
@@ -111,10 +111,8 @@ export class FaqService {
 
   public async deleteFaq(id: string): Promise<IResponse> {
     try {
-      const objectId = new Types.ObjectId(id);
-
       const faq = await this._mongoService.findOneAndUpdate<Faq>('Faq', {
-        options: { _id: objectId },
+        options: { _id: new Types.ObjectId(id) },
         update: { deleted_at: new Date() },
       });
 

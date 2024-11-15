@@ -35,7 +35,7 @@ export class ContentManagerController {
     }
   }
 
-  @Get('slug')
+  @Get(':slug')
   public async getContentBySlug(
     @Req() req: IRequest,
     @Param('slug') slug: string,
