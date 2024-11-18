@@ -10,6 +10,7 @@ import { DatabaseService } from 'src/providers/database/database.service';
 import { User } from 'src/models/Schemas/user';
 import { Token } from 'src/models/Schemas/token';
 import { compareText, device } from 'src/common/utils/helper';
+import { IRequest } from 'src/common/interfaces/global.interface';
 
 import { JWTService } from '../Services/jwt.service';
 import { PUBLIC_KEY } from '../Decorators/public.decorator';
@@ -23,56 +24,61 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this._reflactor.get<boolean>(
-      PUBLIC_KEY,
-      context.getHandler(),
-    );
+    try {
+      const isPublic = this._reflactor.get<boolean>(
+        PUBLIC_KEY,
+        context.getHandler(),
+      );
 
-    if (isPublic) return true;
+      if (isPublic) return true;
 
-    const request = context?.switchToHttp()?.getRequest();
-    const token = request.headers['authorization']?.split(' ')[1];
+      const request: IRequest = context?.switchToHttp()?.getRequest();
+      const token = request.headers['authorization']?.split(' ')[1];
 
-    const { ip_address, deviceType } = device(request);
+      const { ip_address } = device(request);
 
-    if (!token)
-      throw new HttpException('Token not Found', HttpStatus.UNAUTHORIZED);
+      if (!token)
+        throw new HttpException('Token not Found', HttpStatus.UNAUTHORIZED);
 
-    const { data, error_message } = await this._jwtService.verifyToken(token);
-    if (error_message)
-      throw new HttpException(error_message, HttpStatus.UNAUTHORIZED);
+      const { data, error_message } = await this._jwtService.verifyToken(token);
+      if (error_message)
+        throw new HttpException(error_message, HttpStatus.UNAUTHORIZED);
 
-    const { userid } = data;
+      const { userid } = data;
 
-    const user = await this._mongoService.findById<User>('User', userid);
-    if (!user)
-      throw new HttpException('User Not Found.', HttpStatus.UNAUTHORIZED);
+      const user = await this._mongoService.findById<User>('User', {
+        id: userid,
+      });
+      if (!user)
+        throw new HttpException('User Not Found.', HttpStatus.UNAUTHORIZED);
 
-    const userToken = await this._mongoService.findOne<Token>('Token', {
-      options: {
-        userid: user?.id,
-        device: deviceType,
-        ip_address,
-        deleted: false,
-      },
-      sort: {
-        createdAt: 1,
-      },
-      populateOptions: [],
-    });
+      const userToken = await this._mongoService.findOne<Token>('Token', {
+        options: {
+          userid: user?.id,
+          ip_address,
+          deleted: false,
+        },
+        sort: {
+          createdAt: 1,
+        },
+        populateOptions: [],
+      });
 
-    if (!userToken)
-      throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
+      if (!userToken)
+        throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
 
-    const tokenCorrectOrNot = await compareText(
-      token,
-      userToken?.access_token_hash,
-    );
+      const tokenCorrectOrNot = await compareText(
+        token,
+        userToken?.access_token_hash,
+      );
 
-    if (!tokenCorrectOrNot)
-      throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
+      if (!tokenCorrectOrNot)
+        throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
 
-    request.auth.user = user;
-    return true;
+      request.auth = { user };
+      return true;
+    } catch (error) {
+      console.log('🚀 ~ AuthGuard ~ canActivate ~ error:', error);
+    }
   }
 }

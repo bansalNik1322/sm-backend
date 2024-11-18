@@ -14,7 +14,6 @@ export const compareText = async (
   hashed: string,
 ): Promise<boolean> => {
   const isMatch = await bcrypt.compare(text, hashed);
-  console.log('Comparing:', text, 'with hash:', hashed, '=> Match:', isMatch); // Debug: Check comparison
   return isMatch;
 };
 

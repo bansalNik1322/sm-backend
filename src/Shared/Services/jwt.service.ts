@@ -25,13 +25,15 @@ export class JWTService {
       return { accessToken, refreshToken, accessTokenHash, refreshTokenHash };
     } catch (error) {
       console.log('🚀 ~ JWTService ~ generateAuthToken ~ error:', error);
-      throw error; // Rethrow the error to handle it upstream
+      throw error;
     }
   }
 
   public async verifyToken(token: string): Promise<IResponse> {
     try {
-      const { userid } = await this._jwtService.verify(token);
+      const { userid } = await this._jwtService.verify(token, {
+        secret: 'JWT_SECRET_KEY',
+      });
       if (!userid) return { error_message: 'Token Verification Failed' };
       return { data: { userid } };
     } catch (error) {
