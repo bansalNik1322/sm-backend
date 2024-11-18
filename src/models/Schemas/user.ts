@@ -22,7 +22,7 @@ export class User implements IUser {
   @Prop()
   country_code: string;
 
-  @Prop({ required: false, unique: true })
+  @Prop()
   phone: string;
 
   @Prop()

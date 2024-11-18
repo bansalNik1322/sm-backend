@@ -24,14 +24,8 @@ export class AuthService {
       const { name, username, phone, country_code, password, email } = payload;
       const user = await this._mongoService.findOne<User>('User', {
         options: {
-          $and: [
-            {
-              $or: [
-                { phone: phone, country_code: country_code },
-                { email: email },
-              ],
-            },
-          ],
+          ...(phone && country_code && { phone, country_code }),
+          ...(email && { email }),
         },
       });
 
@@ -58,15 +52,14 @@ export class AuthService {
         };
       }
 
-      // Create new user
-
       const createdUser = await this._mongoService.create<User>('User', {
         name,
         password,
         username,
         ...(email && { email }),
-        ...(phone && country_code && { phone, country_code }),
+        ...(phone && country_code ? { phone, country_code } : {}),
       });
+      console.log('🚀 ~ AuthService ~ register ~ createdUser:', createdUser);
 
       const result = await this._helperService.sendotp(
         'registration',

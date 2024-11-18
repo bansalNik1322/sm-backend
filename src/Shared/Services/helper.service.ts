@@ -119,11 +119,11 @@ export class HelperService {
   public sendotp = async (type: string, userid: string): Promise<IResponse> => {
     try {
       const otp = generateOTP();
+      console.log('🚀 ~ HelperService ~ sendotp= ~ otp:', otp);
       const otpHash = await encryptText(`${type}_${otp}_${userid}`);
       const user = await this._mongoService.findById<User>('User', {
         id: userid,
       });
-      console.log('🚀 ~ HelperService ~ sendotp= ~ user:', user);
 
       if (!user) return { error_message: 'User not found' };
 

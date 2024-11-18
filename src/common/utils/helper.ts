@@ -29,7 +29,7 @@ export const generateOTP = () => {
 };
 
 export const device = (req: Request) => {
-  const userAgent = req.headers['user-agent'];
+  const userAgent = req?.headers?.['user-agent'];
 
   let deviceType;
   if (/mobile/i.test(userAgent)) {
@@ -43,29 +43,21 @@ export const device = (req: Request) => {
   }
 
   // Ensure deviceId is a string or null
-  const deviceId = Array.isArray(req.query.deviceId)
-    ? req.query.deviceId[0]
-    : req.query.deviceId || null;
+  const deviceId = Array.isArray(req?.query?.deviceId)
+    ? req?.query?.deviceId[0]
+    : req?.query?.deviceId || null;
 
   let ipAddress: string | string[] =
-    req.headers['x-forwarded-for'] ||
-    req.headers['x-real-ip'] ||
-    req.socket.remoteAddress;
-
-  console.log(
-    'IPV4-IPV6',
-    req.headers['x-forwarded-for'],
-    req.headers['x-real-ip'],
-    req.socket.remoteAddress,
-  );
-  console.log(req?.headers);
+    req?.headers?.['x-forwarded-for'] ||
+    req?.headers?.['x-real-ip'] ||
+    req?.socket?.remoteAddress;
 
   if (typeof ipAddress === 'string') {
-    if (ipAddress.includes('::ffff:')) {
-      ipAddress = ipAddress.split('::ffff:')[1];
+    if (ipAddress?.includes('::ffff:')) {
+      ipAddress = ipAddress?.split('::ffff:')[1];
     }
-    if (ipAddress.includes(':')) {
-      ipAddress = ipAddress.split(':')[0];
+    if (ipAddress?.includes(':')) {
+      ipAddress = ipAddress?.split(':')[0];
     }
   }
 
