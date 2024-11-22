@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
 
@@ -28,36 +29,49 @@ export const generateOTP = () => {
   return otp;
 };
 
-export const device = (req: Request) => {
-  const userAgent = req?.headers?.['user-agent'];
+export const device = (client: Request | Socket) => {
+  let userAgent: string | undefined;
+  let ipAddress: string | string[] | undefined;
+  let deviceId: string | null = null;
 
-  let deviceType;
-  if (/mobile/i.test(userAgent)) {
-    deviceType = 'Mobile';
-  } else if (/iPad|iPhone|iPod|iOS/i.test(userAgent)) {
-    deviceType = 'iOS';
-  } else if (/Android/i.test(userAgent)) {
-    deviceType = 'Android';
-  } else {
-    deviceType = 'Desktop';
+  if ('headers' in client) {
+    // Handle Express.Request
+    userAgent = client.headers['user-agent'];
+    ipAddress =
+      client.headers['x-forwarded-for'] ||
+      client.headers['x-real-ip'] ||
+      client.socket?.remoteAddress;
+    deviceId = (
+      Array.isArray(client.query?.deviceId)
+        ? client.query.deviceId[0]
+        : client.query?.deviceId || null
+    ) as string;
+  } else if ('handshake' in client) {
+    // Handle Socket.IO
+    userAgent = client.handshake.headers['user-agent'];
+    ipAddress =
+      client.handshake.headers['x-forwarded-for'] ||
+      client.handshake.headers['x-real-ip'] ||
+      client.handshake.address;
   }
 
-  // Ensure deviceId is a string or null
-  const deviceId = Array.isArray(req?.query?.deviceId)
-    ? req?.query?.deviceId[0]
-    : req?.query?.deviceId || null;
-
-  let ipAddress: string | string[] =
-    req?.headers?.['x-forwarded-for'] ||
-    req?.headers?.['x-real-ip'] ||
-    req?.socket?.remoteAddress;
-
   if (typeof ipAddress === 'string') {
-    if (ipAddress?.includes('::ffff:')) {
-      ipAddress = ipAddress?.split('::ffff:')[1];
+    if (ipAddress.includes('::ffff:')) {
+      ipAddress = ipAddress.split('::ffff:')[1];
     }
-    if (ipAddress?.includes(':')) {
-      ipAddress = ipAddress?.split(':')[0];
+    if (ipAddress.includes(':')) {
+      ipAddress = ipAddress.split(':')[0];
+    }
+  }
+
+  let deviceType = 'Desktop';
+  if (userAgent) {
+    if (/mobile/i.test(userAgent)) {
+      deviceType = 'Mobile';
+    } else if (/iPad|iPhone|iPod|iOS/i.test(userAgent)) {
+      deviceType = 'iOS';
+    } else if (/Android/i.test(userAgent)) {
+      deviceType = 'Android';
     }
   }
 

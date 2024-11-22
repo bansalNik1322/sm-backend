@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import {
   IpBlockReasons,
   UserAccountStatus,
@@ -63,7 +63,7 @@ export interface IUser {
     answer: string;
   }[];
 
-  otps: {
+  otps?: {
     otp_hash: string;
     otp_expiry_time: Date;
     type: 'email' | 'phone';
@@ -82,6 +82,7 @@ export interface IToken {
   deleted_at?: Date;
   ip_address: string;
   device: string;
+  deleted: boolean;
 }
 
 export interface ILockout {
@@ -133,4 +134,23 @@ export interface IFaq {
   category: string;
   status: boolean;
   deleted_at: Date;
+}
+
+export interface IChat {
+  chat_type: 'group' | 'single';
+  participants: ObjectId[];
+  group_name: string;
+  creator: string;
+}
+
+export interface IChatMessage {
+  chatid: ObjectId;
+  sender: ObjectId;
+  message_text: string;
+  seen_by: ObjectId[];
+}
+
+export interface IChatContact {
+  userid: ObjectId;
+  contacts: ObjectId[];
 }

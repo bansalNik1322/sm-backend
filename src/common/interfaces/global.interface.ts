@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { Socket } from 'socket.io';
 
 import { UserAccountType } from '../constants/enum';
 
@@ -91,6 +92,10 @@ export interface IKeyPair {
 }
 
 export interface IRequest extends Request {
+  auth: { [key: string]: any };
+}
+
+export interface ISocket extends Socket {
   auth: { [key: string]: any };
 }
 

@@ -7,42 +7,42 @@ import {
   RootFilterQuery,
   UpdateQuery,
 } from 'mongoose';
+import { Chat } from 'src/models/Schemas/chat';
+import { ChatMessage } from 'src/models/Schemas/chat_message';
 import { ContentManager } from 'src/models/Schemas/cms';
 import { EmailTemplate } from 'src/models/Schemas/email-template';
 import { Faq } from 'src/models/Schemas/faq';
 import { Lockout } from 'src/models/Schemas/lockout';
 import { LoginAttempt } from 'src/models/Schemas/login-attempts';
 import { SecurityQuestion } from 'src/models/Schemas/security-question';
-import { Token } from 'src/models/Schemas/token';
-import { User } from 'src/models/Schemas/user';
 
 @Injectable()
 export class DatabaseService {
   private models: { [key: string]: Model<any> };
 
   constructor(
-    @InjectModel('User') private _userModel: Model<User>,
     @InjectModel('Faq') private _faqModel: Model<Faq>,
     @InjectModel('SecurityQuestion')
     private _securityQuestionModel: Model<SecurityQuestion>,
     @InjectModel('LoginAttempts')
     private _loginAttemptModel: Model<LoginAttempt>,
     @InjectModel('Lockout') private _lockoutModel: Model<Lockout>,
-    @InjectModel('Token') private _tokenModel: Model<Token>,
+    @InjectModel('Chat') private _chatModel: Model<Chat>,
+    @InjectModel('ChatMessage') private _chatMessageModel: Model<ChatMessage>,
     @InjectModel('EmailTemplate')
     private readonly _emailTemplateModel: Model<EmailTemplate>,
     @InjectModel('ContentManager')
     private readonly _contentManagerModel: Model<ContentManager>,
   ) {
     this.models = {
-      User: _userModel,
       LoginAttempt: _loginAttemptModel,
       Lockout: _lockoutModel,
       EmailTemplate: _emailTemplateModel,
-      Token: _tokenModel,
       ContentManager: _contentManagerModel,
       SecurityQuestion: _securityQuestionModel,
       Faq: _faqModel,
+      Chat: _chatModel,
+      ChatMessage: _chatMessageModel,
     };
   }
 
@@ -142,6 +142,17 @@ export class DatabaseService {
   async deleteMany<T>(modelName: string, options: QueryOptions<T>) {
     const model = this.getModel<T>(modelName);
     return model.deleteMany(options).exec();
+  }
+
+  async updateAll<T>(
+    modelName: string,
+    {
+      options = {},
+      update = {},
+    }: { options: QueryOptions<T>; update: UpdateQuery<T> },
+  ) {
+    const model = this.getModel<T>(modelName);
+    return await model.updateMany(options, update).exec();
   }
 
   async findOneAndUpdate<T>(

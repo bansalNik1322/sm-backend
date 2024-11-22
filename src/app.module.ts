@@ -14,6 +14,10 @@ import { AuthGuard } from './Shared/Guards/auth.guard';
 import { JWTService } from './Shared/Services/jwt.service';
 import { SeederService } from './modules/seeder/seeder.service';
 import { DatabaseService } from './providers/database/database.service';
+import { ChatModule } from './modules/Chat/chat.module';
+import { HelperService } from './Shared/Services/helper.service';
+import { EmailService } from './providers/email/email.service';
+import { SocketModule } from './modules/socket/socket.module';
 
 @Module({
   imports: [
@@ -34,17 +38,21 @@ import { DatabaseService } from './providers/database/database.service';
     }),
     EmailModule,
     AdminModule,
+    ChatModule,
+    SocketModule,
   ],
 
   controllers: [AppController],
   providers: [
     AppService,
+    HelperService,
+    EmailService,
     SeederService,
     DatabaseService,
     JWTService,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard, // Apply the guard globally
+      useClass: AuthGuard,
     },
   ],
 })

@@ -1,18 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { Token } from 'src/models/Schemas/token';
-import { User } from 'src/models/Schemas/user';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Lockout } from 'src/models/Schemas/lockout';
 import { LoginAttempt } from 'src/models/Schemas/login-attempts';
 import { compareText, encryptText, generateOTP } from 'src/common/utils/helper';
 import { EmailTemplate } from 'src/models/Schemas/email-template';
 import { EmailService } from 'src/providers/email/email.service';
-import { IResponse } from 'src/common/interfaces/global.interface';
+import { IResponse, ISocket } from 'src/common/interfaces/global.interface';
 import {
   LOGIN_ATTEMPTS,
   OTP_EXPIRATION_TIME,
 } from 'src/common/constants/global.constant';
 import { IpBlockReasons } from 'src/common/constants/enum';
 import { DatabaseService } from 'src/providers/database/database.service';
+
+import { UserRepository } from '../Repositories/user.repo';
+import { TokenRepository } from '../Repositories/token.repo';
+import { ChatRepository } from '../Repositories/chat.repo';
 
 import { JWTService } from './jwt.service';
 
@@ -22,6 +24,9 @@ export class HelperService {
     private readonly _mongoService: DatabaseService,
     private readonly _emailService: EmailService,
     private readonly _jwtService: JWTService,
+    private readonly _userModel: UserRepository,
+    private readonly _tokenModel: TokenRepository,
+    private readonly _chatModel: ChatRepository,
   ) {}
 
   public verifyIpAndUpdate = async (
@@ -30,9 +35,10 @@ export class HelperService {
     password_correct: boolean,
   ): Promise<IResponse> => {
     try {
-      const user = await this._mongoService.findById<User>('User', {
-        id: userid,
+      const user = await this._userModel.getUser({
+        _id: userid,
       });
+
       if (!user) {
         return { error_message: 'User not found' };
       }
@@ -97,7 +103,17 @@ export class HelperService {
         userid: user?.id,
       });
 
-      await this._mongoService.create<Token>('Token', {
+      await this._tokenModel.updateAllTokens(
+        {
+          userid: user?.id,
+        },
+        {
+          deleted_at: new Date(),
+          deleted: true,
+        },
+      );
+
+      await this._tokenModel.createToken({
         access_token_hash,
         refresh_token_hash,
         ip_address,
@@ -121,7 +137,7 @@ export class HelperService {
       const otp = generateOTP();
       console.log('🚀 ~ HelperService ~ sendotp= ~ otp:', otp);
       const otpHash = await encryptText(`${type}_${otp}_${userid}`);
-      const user = await this._mongoService.findById<User>('User', {
+      const user = await this._userModel.getUser({
         id: userid,
       });
 
@@ -182,7 +198,7 @@ export class HelperService {
     password: string | null,
   ) {
     try {
-      const user = await this._mongoService.findById<User>('User', {
+      const user = await this._userModel.getUser({
         id: userid,
       });
       const otps = user?.otps;
@@ -212,6 +228,99 @@ export class HelperService {
     } catch (error) {
       console.log('🚀 ~ HelperService ~ sendotp= ~ error:', error);
       return { error_message: error?.message };
+    }
+  }
+
+  public async checkValidParticipants(participants: string[], userid: string) {
+    try {
+      const user = (await this._userModel.getUser({
+        id: userid,
+      })) as any;
+      if (!user) return { error_message: 'User not found' };
+
+      for (const i of participants) {
+        if (!user?.contacts?.includes(i)) {
+          return { error_message: 'Invalid Participant Id' };
+        }
+      }
+      return {};
+    } catch (error) {
+      console.log('🚀 ~ HelperService ~ error:', error);
+      return { error_message: error?.message };
+    }
+  }
+
+  public async validateSocketConnection(socket: ISocket): Promise<IResponse> {
+    try {
+      const token = socket.handshake.headers['authorization']?.split(' ')[1];
+      if (!token)
+        throw new HttpException('Token not Found', HttpStatus.UNAUTHORIZED);
+
+      const { data, error_message } = await this._jwtService.verifyToken(token);
+      if (error_message)
+        throw new HttpException(error_message, HttpStatus.UNAUTHORIZED);
+
+      const { userid } = data;
+
+      const user = await this._userModel.getUser({
+        id: userid,
+      });
+
+      if (!user)
+        throw new HttpException('User  Not Found.', HttpStatus.UNAUTHORIZED);
+
+      const userToken = await this._tokenModel.getToken({
+        options: {
+          userid: user?.id,
+          deleted: false,
+        },
+      });
+
+      if (!userToken)
+        throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
+
+      const tokenCorrectOrNot = await compareText(
+        token,
+        userToken?.access_token_hash,
+      );
+
+      if (!tokenCorrectOrNot)
+        throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
+
+      return { data: { user } };
+    } catch (error) {
+      return { error_message: error.message };
+    }
+  }
+
+  public async getChatParticipants(chatid: string) {
+    try {
+      const chat = await this._chatModel.getChat({
+        _id: chatid,
+      });
+      return { data: { participants: chat.participants } };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async isSenderValid(chatid: string, userid: string) {
+    try {
+      const chat = await this._chatModel.getChat({
+        _id: chatid,
+      });
+      console.log(
+        '🚀 ~ HelperService ~ isSenderValid ~ chat?.participants:',
+        chat?.participants,
+        userid,
+      );
+      return {
+        data: {
+          isSender: chat?.participants?.includes(userid as any),
+        },
+      };
+    } catch (error) {
+      throw error;
     }
   }
 }

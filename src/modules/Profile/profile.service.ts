@@ -4,8 +4,8 @@ import {
   IResponse,
   IUpdateProfile,
 } from 'src/common/interfaces/global.interface';
-import { User } from 'src/models/Schemas/user';
 import { DatabaseService } from 'src/providers/database/database.service';
+import { UserRepository } from 'src/Shared/Repositories/user.repo';
 import { HelperService } from 'src/Shared/Services/helper.service';
 
 @Injectable()
@@ -13,6 +13,7 @@ export class ProfileService {
   constructor(
     private readonly _helperService: HelperService,
     private readonly _mongoService: DatabaseService,
+    private readonly _userModel: UserRepository,
   ) {}
 
   async updateEmail(
@@ -35,11 +36,9 @@ export class ProfileService {
             HttpStatus.BAD_REQUEST,
           );
 
-        await this._mongoService.findByIdAndUpdate<User>(
-          'User',
-          request?.auth?.user?.id,
-          { email: email },
-        );
+        await this._userModel.updateUserById(request?.auth?.user?.id, {
+          email: email,
+        });
 
         return {
           data: result,
@@ -71,8 +70,8 @@ export class ProfileService {
 
   public async getProfile(req: IRequest) {
     try {
-      const user = await this._mongoService.findById<User>('User', {
-        id: req?.auth?.user?.id,
+      const user = await this._userModel.getUser({
+        _id: req?.auth?.user?.id,
       });
 
       return {
@@ -90,8 +89,8 @@ export class ProfileService {
   public async updateProfile(payload: IUpdateProfile, req: IRequest) {
     try {
       const { type } = payload;
-      const user = await this._mongoService.findById<User>('User', {
-        id: req?.auth?.user?.id,
+      const user = await this._userModel.getUser({
+        _id: req?.auth?.user?.id,
       });
       switch (type) {
         case 'profile_update':

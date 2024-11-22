@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "fix": "prettier --write src/**/*.ts"
+    "fix": "prettier --write src/**/*.ts",
+    "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -27,6 +28,8 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.8",
+    "@nestjs/websockets": "^10.4.8",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
@@ -34,6 +37,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
     "mongoose": "^8.7.1",
+    "nestjs-command": "^3.1.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "slugify": "^1.6.6",
@@ -81,6 +85,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
-    "modulePaths": ["<rootDir>"]
+    "modulePaths": [
+      "<rootDir>"
+    ]
   }
 }

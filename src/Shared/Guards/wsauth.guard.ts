@@ -5,19 +5,16 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { compareText, device } from 'src/common/utils/helper';
-import { IRequest } from 'src/common/interfaces/global.interface';
+import { compareText } from 'src/common/utils/helper';
+import { ISocket } from 'src/common/interfaces/global.interface';
 
 import { JWTService } from '../Services/jwt.service';
-import { PUBLIC_KEY } from '../Decorators/public.decorator';
 import { UserRepository } from '../Repositories/user.repo';
 import { TokenRepository } from '../Repositories/token.repo';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class WsAuthGuard implements CanActivate {
   constructor(
-    private readonly _reflactor: Reflector,
     private readonly _jwtService: JWTService,
     private readonly _userModel: UserRepository,
     private readonly _tokenModel: TokenRepository,
@@ -25,17 +22,8 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const isPublic = this._reflactor.get<boolean>(
-        PUBLIC_KEY,
-        context.getHandler(),
-      );
-
-      if (isPublic) return true;
-
-      const request: IRequest = context?.switchToHttp()?.getRequest();
-      const token = request.headers['authorization']?.split(' ')[1];
-
-      const { ip_address } = device(request);
+      const client = context.switchToWs().getClient<ISocket>();
+      const token = client.handshake.headers['authorization']?.split(' ')[1];
 
       if (!token)
         throw new HttpException('Token not Found', HttpStatus.UNAUTHORIZED);
@@ -47,15 +35,14 @@ export class AuthGuard implements CanActivate {
       const { userid } = data;
 
       const user = await this._userModel.getUser({
-        _id: userid,
+        id: userid,
       });
 
       if (!user)
-        throw new HttpException('User Not Found.', HttpStatus.UNAUTHORIZED);
+        throw new HttpException('User  Not Found.', HttpStatus.UNAUTHORIZED);
 
       const userToken = await this._tokenModel.getToken({
         userid: user?.id,
-        ip_address,
         deleted: false,
       });
 
@@ -70,10 +57,10 @@ export class AuthGuard implements CanActivate {
       if (!tokenCorrectOrNot)
         throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED);
 
-      request.auth = { user };
+      client.auth = { user };
       return true;
     } catch (error) {
-      console.log('🚀 ~ AuthGuard ~ canActivate ~ error:', error);
+      console.log('🚀 ~ WsAuthGuard ~ canActivate ~ error:', error);
       throw error;
     }
   }

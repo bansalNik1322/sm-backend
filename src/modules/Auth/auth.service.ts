@@ -7,26 +7,23 @@ import {
   ISendOTP,
   IVerifyOTP,
 } from 'src/common/interfaces/global.interface';
-import { compareText, device, encryptText } from 'src/common/utils/helper';
-import { User } from 'src/models/Schemas/user';
-import { DatabaseService } from 'src/providers/database/database.service';
+import { compareText, device } from 'src/common/utils/helper';
+import { UserRepository } from 'src/Shared/Repositories/user.repo';
 import { HelperService } from 'src/Shared/Services/helper.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly _mongoService: DatabaseService,
     private readonly _helperService: HelperService,
+    private readonly _userModel: UserRepository,
   ) {}
 
   public async register(payload: IRegisterUser): Promise<IResponse> {
     try {
       const { name, username, phone, country_code, password, email } = payload;
-      const user = await this._mongoService.findOne<User>('User', {
-        options: {
-          ...(phone && country_code && { phone, country_code }),
-          ...(email && { email }),
-        },
+      const user = await this._userModel.getUser({
+        ...(phone && country_code && { phone, country_code }),
+        ...(email && { email }),
       });
 
       // Check for user existed and verified
@@ -52,7 +49,7 @@ export class AuthService {
         };
       }
 
-      const createdUser = await this._mongoService.create<User>('User', {
+      const createdUser = await this._userModel.createUser({
         name,
         password,
         username,
@@ -89,25 +86,23 @@ export class AuthService {
       const { ip_address } = device(request);
       console.log('🚀 ~ AuthService ~ ip_address:', ip_address);
 
-      const user = await this._mongoService.findOne<User>('User', {
-        options: {
-          $and: [
-            {
-              $or: [
-                { email: userid },
-                { username: userid },
-                {
-                  $and: [
-                    { country_code: country_code },
-                    {
-                      phone: userid,
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
+      const user = await this._userModel.getUser({
+        $and: [
+          {
+            $or: [
+              { email: userid },
+              { username: userid },
+              {
+                $and: [
+                  { country_code: country_code },
+                  {
+                    phone: userid,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       });
 
       if (!user)
@@ -133,14 +128,8 @@ export class AuthService {
           HttpStatus.NOT_ACCEPTABLE,
         );
       }
-      const hash = await encryptText(password);
-      console.log('🚀 ~ AuthService ~ hash:', hash);
 
       const passwordCorrectOrNot = await compareText(password, user?.password);
-      console.log(
-        '🚀 ~ AuthService ~ passwordCorrectOrNot:',
-        passwordCorrectOrNot,
-      );
 
       const result = await this._helperService.verifyIpAndUpdate(
         ip_address as string,
@@ -172,10 +161,8 @@ export class AuthService {
     try {
       const { userid, type } = payload;
 
-      const user = await this._mongoService.findOne<User>('User', {
-        options: {
-          $or: [{ email: userid }, { phone: userid }, { username: userid }],
-        },
+      const user = await this._userModel.getUser({
+        $or: [{ email: userid }, { phone: userid }, { username: userid }],
       });
 
       if (!user)
@@ -202,10 +189,8 @@ export class AuthService {
   public async verifyOTP(payload: IVerifyOTP): Promise<IResponse> {
     try {
       const { userid, otp, type, password = null } = payload;
-      const user = await this._mongoService.findOne<User>('User', {
-        options: {
-          $or: [{ email: userid }, { phone: userid }, { username: userid }],
-        },
+      const user = await this._userModel.getUser({
+        $or: [{ email: userid }, { phone: userid }, { username: userid }],
       });
 
       if (!user)
@@ -232,18 +217,6 @@ export class AuthService {
     } catch (error) {
       console.log('🚀 ~ AuthService ~ register ~ error:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async tryCall() {
-    try {
-      return await this._mongoService.findOne<User>('User', {
-        options: { _id: '671f2fe59c9e0535fe24c84f' },
-        sort: {},
-        populateOptions: [{ path: 'tokens' }, { path: 'login_attempts' }],
-      });
-    } catch (error) {
-      throw error;
     }
   }
 }

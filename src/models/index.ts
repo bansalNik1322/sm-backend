@@ -6,6 +6,9 @@ import { EmailTemplateSchema } from './Schemas/email-template';
 import { ContentManagerSchema } from './Schemas/cms';
 import { SecurityQuestionSchema } from './Schemas/security-question';
 import { FaqSchema } from './Schemas/faq';
+import { ChatSchema } from './Schemas/chat';
+import { ChatContactSchema } from './Schemas/chat_contact';
+import { ChatMessageSchema } from './Schemas/chat_message';
 
 export const models = [
   {
@@ -39,5 +42,17 @@ export const models = [
   {
     name: 'Faq',
     schema: FaqSchema,
+  },
+  {
+    name: 'Chat',
+    schema: ChatSchema,
+  },
+  {
+    name: 'ChatContact',
+    schema: ChatContactSchema,
+  },
+  {
+    name: 'ChatMessage',
+    schema: ChatMessageSchema,
   },
 ];

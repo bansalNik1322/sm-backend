@@ -106,6 +106,12 @@ export class User implements IUser {
     story_visibility: 'public' | 'friends' | 'private';
   };
 
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  })
+  contacts: mongoose.Types.ObjectId[];
+
   @Prop({ required: false, enum: ['email', 'google', 'facebook', 'twitter'] })
   sign_up_method: 'email' | 'google' | 'facebook' | 'twitter';
 
