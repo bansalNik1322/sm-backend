@@ -79,4 +79,16 @@ export class AuthController {
       throw new HttpException(error?.message, error?.status);
     }
   }
+
+  @Post('session')
+  async checkValidSession(@Req() req: IRequest) {
+    try {
+      return {
+        status: true,
+      };
+    } catch (error) {
+      this._logger.error(error?.message, error?.stack, req);
+      throw new HttpException(error?.message, error?.status);
+    }
+  }
 }

@@ -44,7 +44,6 @@ export class EmailController {
     @Body() payload: GetAllTemplateDTO,
     @Req() req: IRequest,
   ) {
-    console.log('🚀 ~ EmailController ~ payload:', payload);
     try {
       return await this._emailTemplateService.getAllEmailTemplates(payload);
     } catch (error) {

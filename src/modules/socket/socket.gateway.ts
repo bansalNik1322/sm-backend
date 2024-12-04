@@ -20,7 +20,7 @@ import { SocketService } from './socket.service';
     origin: '*',
   },
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayConnection {
   constructor(
     private readonly _helperService: HelperService,
     private readonly _socketService: SocketService,
@@ -50,16 +50,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       ([key, value]) => value === client.id,
     )?.[0];
 
-    if (userId) {
-      this.connectedClients.delete(userId);
-      console.log(
-        `User  ${userId} with socket ID ${client.id} disconnected and removed from connected clients.`,
-      );
-    } else {
-      console.log(
-        `Client with socket ID ${client.id} disconnected without a matching user.`,
-      );
-    }
+    // if (userId) {
+    //   this.connectedClients.delete(userId);
+    //   console.log(
+    //     `User  ${userId} with socket ID ${client.id} disconnected and removed from connected clients.`,
+    //   );
+    // } else {
+    //   console.log(
+    //     `Client with socket ID ${client.id} disconnected without a matching user.`,
+    //   );
+    // }
   }
 
   @SubscribeMessage('chat_message')

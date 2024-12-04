@@ -8,14 +8,18 @@ import {
   IVerifyOTP,
 } from 'src/common/interfaces/global.interface';
 import { compareText, device } from 'src/common/utils/helper';
+import { TokenRepository } from 'src/Shared/Repositories/token.repo';
 import { UserRepository } from 'src/Shared/Repositories/user.repo';
 import { HelperService } from 'src/Shared/Services/helper.service';
+import { JWTService } from 'src/Shared/Services/jwt.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly _helperService: HelperService,
     private readonly _userModel: UserRepository,
+    private readonly _tokenModel: TokenRepository,
+    private readonly _jwtService: JWTService,
   ) {}
 
   public async register(payload: IRegisterUser): Promise<IResponse> {

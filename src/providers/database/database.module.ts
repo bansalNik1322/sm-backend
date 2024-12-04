@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import { UserRepository } from 'src/Shared/Repositories/user.repo';
 import { TokenRepository } from 'src/Shared/Repositories/token.repo';
 import { ChatRepository } from 'src/Shared/Repositories/chat.repo';
+import { EmailTemplateRepository } from 'src/Shared/Repositories/email-template';
+import { ContentManagerRepository } from 'src/Shared/Repositories/content-manager.repo';
 
 import { DatabaseService } from './database.service';
 
@@ -17,8 +19,17 @@ const mongoUri =
     MongooseModule.forRoot(mongoUri),
     MongooseModule.forFeature(models),
   ],
-  providers: [DatabaseService, UserRepository, TokenRepository, ChatRepository],
+  providers: [
+    DatabaseService,
+    UserRepository,
+    TokenRepository,
+    ChatRepository,
+    EmailTemplateRepository,
+    ContentManagerRepository,
+  ],
   exports: [
+    EmailTemplateRepository,
+    ContentManagerRepository,
     DatabaseService,
     MongooseModule,
     UserRepository,

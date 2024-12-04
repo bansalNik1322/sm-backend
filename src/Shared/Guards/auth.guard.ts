@@ -34,7 +34,6 @@ export class AuthGuard implements CanActivate {
 
       const request: IRequest = context?.switchToHttp()?.getRequest();
       const token = request.headers['authorization']?.split(' ')[1];
-
       const { ip_address } = device(request);
 
       if (!token)

@@ -33,7 +33,6 @@ export class SecurityQuestionController {
     @Query() payload: PaginationDTO,
   ): Promise<unknown> {
     try {
-      console.log('🚀 ~ SecurityQuestionController ~ payload:', payload);
       return await this._securityQuestionService.getAllSecurityQuestions(
         payload,
       );

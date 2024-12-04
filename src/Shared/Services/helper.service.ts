@@ -252,7 +252,8 @@ export class HelperService {
 
   public async validateSocketConnection(socket: ISocket): Promise<IResponse> {
     try {
-      const token = socket.handshake.headers['authorization']?.split(' ')[1];
+      const token = socket.handshake.headers?.authorization;
+
       if (!token)
         throw new HttpException('Token not Found', HttpStatus.UNAUTHORIZED);
 
@@ -263,7 +264,7 @@ export class HelperService {
       const { userid } = data;
 
       const user = await this._userModel.getUser({
-        id: userid,
+        _id: userid,
       });
 
       if (!user)
@@ -271,7 +272,7 @@ export class HelperService {
 
       const userToken = await this._tokenModel.getToken({
         options: {
-          userid: user?.id,
+          userid: user?._id,
           deleted: false,
         },
       });
